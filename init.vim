@@ -14,7 +14,8 @@ call plug#end()
 
 " basics
 filetype plugin indent on
-syntax on set number
+syntax on 
+set number
 set relativenumber
 set incsearch
 set ignorecase
@@ -69,7 +70,7 @@ let g:deoplete#sources#clang#sort_algo = "alphabetical"
 
 " Theme
 syntax enable
-"let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+let g:NVIM_TUI_ENABLE_TRUE_COLOR=1
 set termguicolors
 set background=dark
 colorscheme nova
@@ -89,11 +90,3 @@ let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
-
-" ale prettier-eslint
-"let g:ale_fixers = {
-"\   'javascript': ['prettier_eslint'],
-"\}
-"let g:ale_fix_on_save = 1
-"let g:ale_javascript_prettier_eslint_executable = 'prettier-eslint'
-"let g:ale_javascript_prettier_eslint_use_global = 1
