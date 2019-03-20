@@ -6,7 +6,7 @@ Xft.autohint: true
 Xft.hintstyle: hintfull
 Xft.lcdfilter: lcdfilter
 
-#include ".Xsolarized" 
+#include ".XgruvboxDark" 
 
 ! Отключение полосы прокрутки
 URxvt.scrollBar: false
