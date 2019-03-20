@@ -4,14 +4,14 @@ configuration                   {
 	width:                      50;
 	lines:                      15;
 	columns:                    1;
-  font:                         "Fira Sans Mono 14";
+    font:                       "System San Francisco 14";
 	bw:                         1;
 	location:                   0;
 	padding:                    5;
 	yoffset:                    0;
 	xoffset:                    0;
 	fixed-num-lines:            true;
-  show-icons:                   true;
+    show-icons:                 true;
 	terminal:                   "rofi-sensible-terminal";
 	ssh-client:                 "ssh";
 	ssh-command:                "{terminal} -e     {ssh-client} {host}";
@@ -41,16 +41,16 @@ configuration                   {
 /*	filter:                     ;*/
 	separator-style:            "dash";
 	hide-scrollbar:             false;
-	fake-transparency:          false;
-	dpi:                        -1;
+	fake-transparency:          true;
+	dpi:                        0;
 	threads:                    0;
 	scrollbar-width:            8;
 	scroll-method:              0;
-	fake-background:            "screenshot";
+	fake-background:            "background";
 	window-format:              "{w}        {i}{c} {t}";
 	click-to-exit:              true;
 	show-match:                 true;
-  theme:                        "mytheme";
+  theme:                        "gruvbox-dark-soft";
 /*	color-normal:               ;*/
 /*	color-urgent:               ;*/
 /*	color-active:               ;*/

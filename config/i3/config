@@ -4,7 +4,7 @@
 set $mod Mod4
 
 # Set default terminal
-set $terminal termite
+set $terminal st
 
 # Font for window titles.
 font pango:System San Francisco Display 12
@@ -22,6 +22,9 @@ bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 
 # Use Mouse+$mod to drag floating windows to their wanted position
+# Commands to set Super_R to mod3
+# xmodmap -e 'remove Mod4 = Super_R'
+# xmodmap -e 'add Mod3 = Super_R'
 floating_modifier $mod
 # ------------------------------ #
 
@@ -35,7 +38,13 @@ bindsym $mod+Shift+r restart
 # Exit i3 (logs you out of your X session)
 bindsym $mod+Shift+q exec i3-msg exit
 # Lock i3
-bindsym $mod+Shift+p exec i3lock -e
+bindsym $mod+Shift+p exec i3lock -e -c 000000
+# Scratchpad
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus scratchpad show
+# mouse button
+bindsym XF86Forward workspace next
+bindsym XF86Back workspace prev
 # ------------------------------ #
 
 
@@ -53,6 +62,12 @@ bindsym $mod+z exec $terminal -e "vifm"
 bindsym $mod+slash exec $terminal -e "htop"
 # Start rofi (a program launcher)
 bindsym $mod+d exec rofi -show
+# Telegram
+bindsym $mod+n exec telegram-desktop
+# Emacs
+bindsym $mod+v exec emacs
+# Calculator
+bindsym XF86Calculator exec gnome-calculator
 # ------------------------------ #
 
 
@@ -87,6 +102,13 @@ bindsym $mod+s split v
 
 # Enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
+
+# bindsym $mod+g exec --no-startup-id "if [ `i3-msg -t get_tree | grep -Po \
+#          '.*\\"gaps\\":{\\"inner\\":\K(-|)[0-9]+(?=.*\\"focused\\":true)' -eq 0 ] then \
+#              i3-msg gaps inner current set 0 \
+#          else \
+#              i3-msg gaps inner current set 10 \
+#          fi"
 # ------------------------------ #
 
 
@@ -99,7 +121,8 @@ bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 0 -5%
 # Mute sound
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 0 toggle
 # Start playing
-bindsym XF86AudioPlay exec bash ~/.config/i3/player.sh
+bindsym XF86AudioPlay exec --no-startup-id playerctl play
+bindsym XF86AudioPause exec --no-startup-id playerctl pause
 # Next track
 bindsym XF86AudioNext exec playerctl next
 # Previous track
@@ -152,9 +175,9 @@ bindsym $mod+Shift+0 move container to workspace $ws10
 # Start compton (window composer)
 exec --no-startup-id compton -b
 # Set wallpaper
-exec --no-startup-id feh --bg-fill ~/Изображения/oldskool-photography-116514-unsplash.jpg
+exec --no-startup-id nitrogen --restore
 # Start polybar (replace for i3 bar)
-exec --no-startup-id bash ~/.config/i3/launch.sh
+exec --no-startup-id bash ~/.config/polybar/launch.sh
 # Start conky (system monitor)
 exec --no-startup-id conky -c ~/.conky/Gotham/Gotham
 # Set keybinding to change keyboard layout

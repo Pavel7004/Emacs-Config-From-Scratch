@@ -3,12 +3,15 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'scrooloose/nerdtree'
 Plug 'bling/vim-airline'
 Plug 'scrooloose/nerdcommenter'
-Plug 'zchee/deoplete-jedi'
 Plug 'trevordmiller/nova-vim'
 Plug 'w0rp/ale'
 Plug 'zchee/deoplete-clang'
 Plug 'Shougo/neoinclude.vim'
 Plug 'townk/vim-autoclose'
+Plug 'ying17zi/vim-live-latex-preview'
+Plug 'altercation/vim-colors-solarized'
+Plug 'eagletmt/neco-ghc'
+Plug 'morhetz/gruvbox'
 " call PlugInstall to install new plugins
 call plug#end()
 
@@ -68,12 +71,15 @@ let g:deoplete#sources#clang#libclang_path = "/usr/lib/libclang.so"
 let g:deoplete#sources#clang#clang_header = "/usr/lib/clang"
 let g:deoplete#sources#clang#sort_algo = "alphabetical"
 
+" haskell
+autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
+
 " Theme
 syntax enable
-let g:NVIM_TUI_ENABLE_TRUE_COLOR=1
+let g:NVIM_TUI_ENABLE_TRUE_COLOR = 1
 set termguicolors
 set background=dark
-colorscheme nova
+colorscheme gruvbox
 
 " Vim-airline
 let g:airline_symbols_ascii = 1
