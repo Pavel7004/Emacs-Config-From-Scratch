@@ -18,7 +18,7 @@
 
 ;;;;;
 
-(org-babel-load-file (expand-file-name "~/.emacs.d/myConfig.org")) 
+(org-babel-load-file (expand-file-name "~/.emacs.d/myConfig.org"))
 
 ;;;;;
 
@@ -33,7 +33,7 @@
     ("a22f40b63f9bc0a69ebc8ba4fbc6b452a4e3f84b80590ba0a92b4ff599e53ad0" "b583823b9ee1573074e7cbfd63623fe844030d911e9279a7c8a5d16de7df0ed0" "8f97d5ec8a774485296e366fdde6ff5589cf9e319a584b845b6f7fa788c9fa9a" "585942bb24cab2d4b2f74977ac3ba6ddbd888e3776b9d2f993c5704aa8bb4739" default)))
  '(package-selected-packages
    (quote
-    (company-irony diminish company powerline-evil evil rainbow-mode smex ido-vertical-mode gruvbox-theme which-key use-package))))
+    (treemacs aggresive-indent aggressive-indent yasnippet-snippets yasnippet company-irony diminish company powerline-evil evil rainbow-mode smex ido-vertical-mode gruvbox-theme which-key use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
