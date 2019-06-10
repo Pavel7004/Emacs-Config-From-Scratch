@@ -180,8 +180,8 @@ exec --no-startup-id nitrogen --restore
 exec --no-startup-id bash ~/.config/polybar/launch.sh
 # Start conky (system monitor)
 exec --no-startup-id conky -c ~/.conky/Gotham/Gotham
-# Set keybinding to change keyboard layout
-exec --no-startup-id setxkbmap -option 'grp:win_space_toggle'
 # Start dunst (notification manager)
 exec --no-startup-id dunst > /dev/null &
+# Keyboard layout
+exec --no-startup-id setxkbmap us,ru -option 'grp:win_space_toggle'
 # ------------------------------ #

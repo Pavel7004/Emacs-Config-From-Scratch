@@ -113,6 +113,13 @@
     :config
     (global-aggressive-indent-mode 1))
 #+END_SRC
+** org-mode bullets
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
+#+END_SRC
 * ido
 ** enable ido mode
 #+BEGIN_SRC emacs-lisp
@@ -124,6 +131,15 @@
 ** switch buffer
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-x C-b") 'ibuffer)
+#+END_SRC
+* auctex
+** package
+#+BEGIN_SRC emacs-lisp
+  (use-package auctex
+    :ensure t
+    :config
+    ;(add-hook 'latex-mode-hook (lambda () ()))
+  )
 #+END_SRC
 * auto completion
 ** company package
