@@ -12,9 +12,9 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(unless (package-installed-p 'gruvbox-theme)
+(unless (package-installed-p 'dracula-theme)
   (package-refresh-contents)
-  (package-install 'gruvbox-theme))
+  (package-install 'dracula-theme))
 
 ;;;;;
 
@@ -35,13 +35,13 @@
  '(custom-enabled-themes (quote (dracula)))
  '(custom-safe-themes
    (quote
-    ("274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "a22f40b63f9bc0a69ebc8ba4fbc6b452a4e3f84b80590ba0a92b4ff599e53ad0" "b583823b9ee1573074e7cbfd63623fe844030d911e9279a7c8a5d16de7df0ed0" "8f97d5ec8a774485296e366fdde6ff5589cf9e319a584b845b6f7fa788c9fa9a" "585942bb24cab2d4b2f74977ac3ba6ddbd888e3776b9d2f993c5704aa8bb4739" default)))
+    ("1436d643b98844555d56c59c74004eb158dc85fc55d2e7205f8d9b8c860e177f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" "4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "a22f40b63f9bc0a69ebc8ba4fbc6b452a4e3f84b80590ba0a92b4ff599e53ad0" "b583823b9ee1573074e7cbfd63623fe844030d911e9279a7c8a5d16de7df0ed0" "8f97d5ec8a774485296e366fdde6ff5589cf9e319a584b845b6f7fa788c9fa9a" "585942bb24cab2d4b2f74977ac3ba6ddbd888e3776b9d2f993c5704aa8bb4739" default)))
  '(fci-rule-color "#073642")
  '(flycheck-color-mode-line-face-to-color (quote mode-line-buffer-id))
  '(frame-background-mode (quote dark))
  '(package-selected-packages
    (quote
-    (auctex org-bullets dracula-theme color-theme-solarized color-theme-sanityinc-solarized treemacs aggresive-indent aggressive-indent yasnippet-snippets yasnippet company-irony diminish company powerline-evil evil rainbow-mode smex ido-vertical-mode gruvbox-theme which-key use-package)))
+    (flycheck auctex org-bullets dracula-theme color-theme-solarized color-theme-sanityinc-solarized treemacs aggresive-indent aggressive-indent yasnippet-snippets yasnippet company-irony diminish company rainbow-mode smex ido-vertical-mode gruvbox-theme which-key use-package)))
  '(pdf-view-midnight-colors (quote ("#fdf4c1" . "#1d2021")))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map

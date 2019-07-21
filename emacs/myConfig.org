@@ -1,3 +1,43 @@
+
+* Secure code editor
+#+BEGIN_SRC emacs-lisp
+    (require 'cl)
+    (setq tls-checktrust t)
+
+    (setq python (or (executable-find "py.exe")
+		     (executable-find "python")
+		     ))
+
+    (let ((trustfile
+	   (replace-regexp-in-string
+	    "\\\\" "/"
+	    (replace-regexp-in-string
+	     "\n" ""
+	     (shell-command-to-string (concat python " -m certifi"))))))
+      (setq tls-program
+	    (list
+	     (format "gnutls-cli%s --x509cafile %s -p %%p %%h"
+		     (if (eq window-system 'w32) ".exe" "") trustfile)))
+      (setq gnutls-verify-error t)
+      (setq gnutls-trustfiles (list trustfile)))
+
+  ;   Test the settings by using the following code snippet:
+  ;    (let ((bad-hosts
+  ;          (loop for bad
+  ;                 in `("https://wrong.host.badssl.com/"
+  ;                      "https://self-signed.badssl.com/")
+  ;                if (condition-case e
+  ;                       (url-retrieve
+  ;                        bad (lambda (retrieved) t))
+  ;                     (error nil))
+  ;                collect bad)))
+  ;     (if bad-hosts
+  ;         (error (format "tls misconfigured; retrieved %s ok" bad-hosts))
+  ;       (url-retrieve "https://badssl.com"
+  ;                     (lambda (retrieved) t))))
+#+END_SRC
+
+
 * Terminal
 ** set default shell to bash
 #+BEGIN_SRC emacs-lisp 
@@ -6,6 +46,8 @@
     (interactive (list my-term-shell)))
   (ad-activate 'ansi-term)
 #+END_SRC
+
+
 * dashboard
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
@@ -14,10 +56,21 @@
     (dashboard-setup-startup-hook)
     (setq dashboard-items '((recents . 15))))
 #+END_SRC
+
+
 * Editor
 ** enable line highlight
 #+BEGIN_SRC emacs-lisp
   (global-hl-line-mode t)
+#+END_SRC
+** reload config
+#+BEGIN_SRC emacs-lisp
+  (defun config-reload ()
+    "reloads ~/.emacs.d/myConfig.org at runtime"
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/myConfig.org")))
+
+  (global-set-key (kbd "C-c r") 'config-reload)
 #+END_SRC
 ** disable bars
 #+BEGIN_SRC emacs-lisp
@@ -35,7 +88,7 @@
 #+END_SRC
 ** no backups
 #+BEGIN_SRC emacs-lisp
-  (setq make-backup-file nil)
+  (setq make-backup-files nil)
   (setq auto-save-default nil)
 #+END_SRC
 ** display time
@@ -43,11 +96,48 @@
   (setq display-time-24hr-format t)
   (display-time-mode 1)
 #+END_SRC
-** tab width
+** c code style
 #+BEGIN_SRC emacs-lisp
-  (setq tab-width 8)
+  (defun my-c-style ()
+    (c-set-style "k&r")
+    (turn-on-font-lock)
+    (setq tab-width 4))
+
+  (add-hook 'c-mode-hook 'my-c-style)
 #+END_SRC
-* Packages
+
+** get rid of startup message
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t)
+#+END_SRC
+** electric
+#+BEGIN_SRC emacs-lisp
+  (electric-pair-mode t)
+#+END_SRC
+** spell checking
+#+BEGIN_SRC emacs-lisp
+  (defun spell-buffer-english ()
+    (interactive)
+    (ispell-change-dictionary "en_US")
+    (flyspell-buffer))
+
+  (use-package ispell
+    :config
+    (when (executable-find "hunspell")
+      (setq-default ispell-program-name "hunspell")
+      (setq ispell-really-hunspell t))
+
+    ;; (setq ispell-program-name "aspell"
+    ;;       ispell-extra-args '("--sug-mode=ultra"))
+    :bind
+    ("C-c e" . spell-buffer-english))
+
+  (dolist (hook '(text-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode 1) (visual-line-mode 1))))
+#+END_SRC
+
+
+* Packagesn
 ** which-key
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
@@ -77,12 +167,16 @@
     :ensure t
     :init (rainbow-mode 1))
 #+END_SRC
-** powerline
+** set mode line
 #+BEGIN_SRC emacs-lisp
-  (use-package powerline
+  (use-package smart-mode-line-atom-one-dark-theme
+    :ensure t)
+  (use-package smart-mode-line
     :ensure t
     :init
-    (powerline-default-theme))
+    (setq sml/theme 'atom-one-dark)
+    (setq sml/no-confirm-load-theme t)
+    (sml/setup))
 #+END_SRC
 ** diminish
 #+BEGIN_SRC emacs-lisp
@@ -120,6 +214,40 @@
     :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
 #+END_SRC
+
+** swiper
+#+BEGIN_SRC emacs-lisp
+					  ;(use-package swiper
+					  ;:ensure t
+					  ;:bind
+  ;("C-s" . swiper)
+#+END_SRC
+** magit (version control)
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :ensure t
+    :bind (("C-c m" . magit-status)))
+
+  (use-package magit-gitflow
+    :ensure t
+    :config
+    (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
+#+END_SRC
+** flycheck
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :init (global-flycheck-mode))
+#+END_SRC
+** Async processes wherever possible
+#+BEGIN_SRC emacs-lisp
+  (use-package async
+    :ensure t
+    :init
+    (dired-async-mode 1))
+#+END_SRC
+
+
 * ido
 ** enable ido mode
 #+BEGIN_SRC emacs-lisp
@@ -132,15 +260,19 @@
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-x C-b") 'ibuffer)
 #+END_SRC
+
+
 * auctex
 ** package
 #+BEGIN_SRC emacs-lisp
-  (use-package auctex
-    :ensure t
-    :config
-    ;(add-hook 'latex-mode-hook (lambda () ()))
-  )
+;(use-package auctex
+;:ensure t
+;:config
+;(add-hook 'latex-mode-hook (lambda () ()))
+;)
 #+END_SRC
+
+
 * auto completion
 ** company package
 #+BEGIN_SRC emacs-lisp
@@ -173,68 +305,4 @@
   (with-eval-after-load 'company
     (add-hook 'c++-mode-hook 'company-mode)
     (add-hook 'c-mode-hook 'company-mode))
-#+END_SRC
-* treemacs
-#+BEGIN_SRC emacs-lisp
-  (use-package treemacs
-    :ensure t
-    :defer t
-    :init
-    (with-eval-after-load 'winum
-      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-    :config
-    (progn
-      (setq treemacs-collapse-dirs                 (if (executable-find "python") 3 0)
-	    treemacs-deferred-git-apply-delay      0.5
-	    treemacs-display-in-side-window        t
-	    treemacs-eldoc-display                 t
-	    treemacs-file-event-delay              5000
-	    treemacs-file-follow-delay             0.2
-	    treemacs-follow-after-init             t
-	    treemacs-git-command-pipe              ""
-	    treemacs-goto-tag-strategy             'refetch-index
-	    treemacs-indentation                   2
-	    treemacs-indentation-string            " "
-	    treemacs-is-never-other-window         nil
-	    treemacs-max-git-entries               5000
-	    treemacs-no-png-images                 nil
-	    treemacs-no-delete-other-windows       t
-	    treemacs-project-follow-cleanup        nil
-	    treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-	    treemacs-recenter-distance             0.1
-	    treemacs-recenter-after-file-follow    nil
-	    treemacs-recenter-after-tag-follow     nil
-	    treemacs-recenter-after-project-jump   'always
-	    treemacs-recenter-after-project-expand 'on-distance
-	    treemacs-show-cursor                   nil
-	    treemacs-show-hidden-files             t
-	    treemacs-silent-filewatch              nil
-	    treemacs-silent-refresh                nil
-	    treemacs-sorting                       'alphabetic-desc
-	    treemacs-space-between-root-nodes      t
-	    treemacs-tag-follow-cleanup            t
-	    treemacs-tag-follow-delay              1.5
-	    treemacs-width                         35)
-
-      ;; The default width and height of the icons is 22 pixels. If you are
-      ;; using a Hi-DPI display, uncomment this to double the icon size.
-      (treemacs-resize-icons 22)
-
-      (treemacs-follow-mode t)
-      (treemacs-filewatch-mode t)
-      (treemacs-fringe-indicator-mode t)
-      (pcase (cons (not (null (executable-find "git")))
-		   (not (null (executable-find "python3"))))
-	(`(t . t)
-	 (treemacs-git-mode 'deferred))
-	(`(t . _)
-	 (treemacs-git-mode 'simple))))
-    :bind
-    (:map global-map
-	  ("M-0"       . treemacs-select-window)
-	  ("C-x t 1"   . treemacs-delete-other-windows)
-	  ("C-x t t"   . treemacs)
-	  ("C-x t B"   . treemacs-bookmark)
-	  ("C-x t C-t" . treemacs-find-file)
-	  ("C-x t M-t" . treemacs-find-tag)))
 #+END_SRC
