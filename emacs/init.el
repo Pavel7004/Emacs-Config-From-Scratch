@@ -41,7 +41,7 @@
  '(frame-background-mode (quote dark))
  '(package-selected-packages
    (quote
-    (flycheck auctex org-bullets dracula-theme color-theme-solarized color-theme-sanityinc-solarized treemacs aggresive-indent aggressive-indent yasnippet-snippets yasnippet company-irony diminish company rainbow-mode smex ido-vertical-mode gruvbox-theme which-key use-package)))
+    (linum-relative swiper highlight-indent-guides doom-modeline minions all-the-icons flycheck-irony flycheck-pos-tip projectile git-gutter flycheck org-bullets dracula-theme aggresive-indent yasnippet-snippets yasnippet company-irony diminish company smex ido-vertical-mode which-key use-package)))
  '(pdf-view-midnight-colors (quote ("#fdf4c1" . "#1d2021")))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
