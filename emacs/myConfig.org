@@ -160,7 +160,8 @@
 #+END_SRC
 ** enable line highlight
 #+BEGIN_SRC emacs-lisp
-  (global-hl-line-mode t)
+  (when window-system
+    (global-hl-line-mode t))
 #+END_SRC
 ** reload config
 #+BEGIN_SRC emacs-lisp
@@ -261,15 +262,21 @@
   (use-package smex
     :ensure t
     :init (smex-initialize)
-    :bind
-    ("M-x" . smex))
+    :bind ("M-x" . smex))
 #+END_SRC
 ** rainbow(colored hex colors)
 #+BEGIN_SRC emacs-lisp
-  (use-package rainbow-mode
+  ;; (use-package rainbow-mode
+  ;;   :ensure t
+  ;;   :diminish rainbow-mode
+  ;;   :hook (prog-mode . rainbow-mode))
+#+END_SRC
+** nord colorscheme
+#+BEGIN_SRC emacs-lisp
+  (use-package nord-theme
     :ensure t
-    :diminish rainbow-mode
-    :hook (prog-mode . rainbow-mode))
+    :config
+    (load-theme 'nord t))
 #+END_SRC
 ** set mode line
 #+BEGIN_SRC emacs-lisp

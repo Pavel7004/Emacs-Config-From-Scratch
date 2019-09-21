@@ -9,100 +9,188 @@
 ;   ╚═╝      ╚═════╝ ╚══════╝╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
 ;
 ;
-;   Modified By Aditya Shakya.
-;
 ;==========================================================
 
-[color]
+[colors]
 
-trans = #00000000
-white = #FFFFFF
-black = #000000
-
-bg = #1F1F1F
-fg = #FFFFFF
-fg-alt = #A9ABB0
-
-acolor = #ffb300
-curgent = #e53935
-coccupied = #1e88e5
-
-## Material Colors
-
-red = #e53935
-pink = #d81b60
-purple = #8e24aa
-deep-purple = #5e35b1
-indigo = #3949ab
-blue = #1e88e5
-light-blue = #039be5
-cyan = #00acc1
-teal = #00897b
-green = #43a047
-light-green = #7cb342
-lime = #c0ca33
-yellow = #fdd835
-amber = #ffb300
-orange = #fb8c00
-deep-orange = #f4511e
-brown = #6d4c41
-grey = #757575
-blue-gray = #546e7a
-
-;==========================================================
+bg              = #3b4252
+bg-workspaces   = #2e3440
+bg-focused      = #eceff4
+bg-state        = ${colors.bg}
+bg-date         = #a3be8c
+bg-volume       = #b48ead
+bg-layout       = #5e81ac
+bg-tray         = #8fbcbb
+bg-xwindow      = #88c0d0
+fg              = #d8dee9
+fg-empty        = #81a1c1
+red             = #d08770
 
 [bar/main]
-;monitor = LVDS1
-;width = 90%
-height = 22
-;offset-x = 5%
-;offset-y = 2%
-;bottom = true
+background = ${colors.bg}
+foreground = ${colors.fg}
+height     = 28
+
 fixed-center = true
-line-size = 2
+font-0 = San Francisco Display Regular:size=13;1
+font-1 = FontAwesome:size=15;1
 
-padding-left = 1
-padding-right = 1
+modules-left  = xwindow
+modules-center = bspwm
+modules-right = xkeyboard date volume
 
-background = ${color.bg}
-foreground = ${color.fg}
+override-redirect = false
+wm-restack        = bspwm
 
-border-size = 3
-border-color = ${color.bg}
+tray-position = left
+tray-background = ${colors.bg-tray}
+tray-maxsize = 28
 
-module-margin-left = 1
-module-margin-right = 1
-
-;==========================================================
-
-font-0 = SystemSanFranciscoDisplay:size=13;1
-font-1 = FontAwesome5Free:style=Solid:size=13;1
-font-2 = FontAwesome5Brands:size=13;1"
-
-;==========================================================
-
-cursor-click = pointer
-cursor-scroll = ns-resize
-
-tray-position = right
-tray-padding = 1
-tray-background = ${color.bg}
-tray-detached = false
-tray-offset-x = 1
-;tray-maxsize = 16
-
-scroll-up = i3wm-wsnext
-scroll-down = i3wm-wsprev
-
-separator = |
-
-;== Module Location ========================================================
-
-modules-left = i3
-modules-center = date
-modules-right = volume cpu memory filesystem battery 
- 
 ;== Modules ========================================================
+
+[module/bspwm]
+type = internal/bspwm
+
+enable-click    = true
+enable-scroll   = true
+reverse-scroll  = true
+pin-workspaces  = true
+
+ws-icon-0       = 1;
+ws-icon-1       = 2;
+ws-icon-2       = 3;
+ws-icon-3       = 4;
+ws-icon-4       = 5;
+ws-icon-5       = 6;
+ws-icon-6       = 7;
+ws-icon-7       = 8;
+ws-icon-8       = 9;
+ws-icon-9       = 10;
+ws-icon-default = " "
+
+
+format = <label-state> <label-mode>
+
+label-focused               = %icon%
+label-focused-background    = ${colors.bg-focused}
+label-focused-underline     = ${colors.bg-focused}
+label-focused-padding       = 2
+label-focused-foreground    = ${colors.bg}
+
+label-occupied              = %icon%
+label-occupied-padding      = 2
+label-occupied-background   = ${colors.bg-workspaces}
+
+label-urgent                = %icon%
+label-urgent-foreground     = ${colors.red} 
+label-urgent-padding        = 2
+
+label-empty                     = %icon%
+label-empty-foreground          = ${colors.fg-empty}
+label-empty-padding             = 2
+label-empty-background          = ${colors.bg-workspaces}
+label-monocle                   = "  "
+label-monocle-foreground        = ${colors.fg}
+label-monocle-background        = ${colors.bg-state}
+label-tiled                     = "  "
+label-tiled-foreground          = ${colors.fg}
+label-tiled-background          = ${colors.bg-state}
+label-fullscreen                = "  "
+label-fullscreen-foreground     = ${colors.fg}
+label-fullscreen-background     = ${colors.bg-state}
+label-floating                  = "  "
+label-floating-foreground       = ${colors.fg}
+label-floating-background       = ${colors.bg-state}
+label-pseudotiled               = "  "
+label-pseudotiled-foreground    = ${colors.fg}
+label-pseudotiled-background    = ${colors.bg-state}
+label-locked                    = "  "
+label-locked-foreground         = ${colors.fg}
+label-locked-background         = ${colors.bg-state}
+label-sticky                    = "  "
+label-sticky-foreground         = ${colors.fg}
+label-sticky-background         = ${colors.bg-state}
+label-private                   =  "     "
+label-private-foreground        = ${colors.fg}
+label-private-background        = ${colors.bg-state}
+
+format-foreground = ${colors.fg}
+format-background = ${colors.bg-workspaces}
+;; bspwm
+
+[module/date]
+type        = internal/date
+interval    = 60
+
+format-background = ${colors.bg-date}
+format-padding = 2
+
+date    = %a %d %b
+time    = %H:%M
+label   =   %date%   %time%
+;; date
+
+[module/volume]
+type            = internal/alsa
+
+format-volume               = <ramp-volume> <label-volume>
+format-volume-background    = ${colors.bg-volume}
+format-volume-padding       = 2
+format-muted                = "      0 %"
+format-muted-background     = ${colors.bg-volume}
+format-muted-foreground     = ${colors.bg}
+format-muted-padding        = 2
+
+ramp-volume-0   = ""
+ramp-volume-1   = ""
+ramp-volume-2   = ""
+
+label-volume    = "%percentage:3% %"
+;; volume
+
+[module/xkeyboard]
+type        = internal/xkeyboard
+blacklist-0 = num lock
+
+format                      = <label-indicator> <label-layout>
+format-foreground           = ${colors.fg}
+format-background           = ${colors.bg-layout}
+format-padding              = 2
+
+label-layout                =  %layout:3%
+label-layout-underline      = ${colors.bg}
+label-indicator-padding     = 0
+label-indicator-margin-right= 2
+label-indicator-foreground  = ${colors.red}
+label-indicator-underline   = ${colors.fg}
+;; xkeyboard
+
+[module/xwindow]
+type = internal/xwindow
+
+label           = %title%
+label-maxlen    = 50
+
+format-foreground   = ${colors.fg}
+format-background   = ${colors.bg-xwindow}
+format-padding      = 2
+;; xwindow
+
+[module/eth]
+type = internal/network
+interface = enp2s0
+interval = 3.0
+
+format-connected            = <label-connected>
+format-connected-background = ${colors.bg-tray}
+format-connected-padding    = 2
+label-connected             = ""
+
+format-disconnected             = <label-disconnected>
+format-disconnected-background  = ${colors.bg-tray}
+format-disconnected-padding     = 2
+label-disconnected              = ""
+;; eth
 
 [module/filesystem]
 type = internal/fs
@@ -112,116 +200,28 @@ mount-0 = /
 
 label-mounted =   %free%
 label-unmounted = %mountpoint% not mounted
-label-unmounted-foreground = ${color.fg}
+label-unmounted-foreground = ${colors.fg}
+;; filesystem
 
 [module/memory]
 type = internal/memory
 interval = 2
 format = <label>
 format-prefix = "  "
-format-prefix-foreground = ${color.fg}
-format-underline = ${color.bg}
+format-prefix-foreground = ${colors.fg}
+format-underline = ${colors.bg}
 label = %percentage_used%%
+;; memory
 
 [module/cpu]
 type = internal/cpu
 interval = 2
 format = <label>
 format-prefix = " "
-format-prefix-foreground = ${color.fg}
-format-underline = ${color.bg}
+format-prefix-foreground = ${colors.fg}
+format-underline = ${colors.bg}
 label = %percentage:2%%
-
-[module/i3]
-type = internal/i3
-format = <label-state> <label-mode>
-index-sort = true
-wrapping-scroll = false
-
-strip-wsnumbers = true
-
-; Only show workspaces on the same output as the bar
-pin-workspaces = true
-
-label-mode-padding = 1
-label-mode-foreground = ${color.fg}
-label-mode-background = ${color.bg}
-
-; focused = Active workspace on focused monitor
-label-focused = %name%
-label-focused-background = ${color.bg}
-label-focused-foreground = ${color.acolor}
-label-focused-underline = ${color.deep-orange}
-label-focused-padding = 1
-
-; unfocused = Inactive workspace on any monitor
-label-unfocused = %name%
-label-unfocused-padding = 1
-
-; visible = Active workspace on unfocused monitor
-label-visible = %name%
-label-visible-background = ${color.bg}
-label-visible-foreground = ${color.fg-alt}
-label-visible-underline = ${color.bg}
-label-visible-padding = 1
-
-; urgent = Workspace with urgency hint set
-label-urgent = %name%
-label-urgent-background = ${color.bg}
-label-urgent-foreground = ${color.curgent}
-label-urgent-padding = 1
-
-; Separator in between workspaces
-; label-separator = |
-
-[module/workspaces]
-type = internal/xworkspaces
-pin-workspaces = false
-enable-click = true
-enable-scroll = true
-format-padding = 0
-
-icon-0 = 1;
-icon-1 = 2;
-icon-2 = 3;
-icon-3 = 4;
-;icon-4 = 5;
-icon-default = 
-
-format = <label-state>
-label-active = %icon%
-label-occupied = %icon%
-label-urgent = %icon%
-label-empty = %icon%
-
-label-occupied-padding = 2
-label-empty-padding = 2
-label-urgent-padding = 2
-label-active-padding = 2
-
-label-active-foreground = ${color.acolor}
-label-urgent-foreground = ${color.curgent}
-label-empty-foreground = ${color.fg}
-label-occupied-foreground = ${color.coccupied}
-
-label-active-underline = ${color.acolor}
-label-urgent-underline = ${color.curgent}
-label-occupied-underline = ${color.coccupied}
-
-;==========================================================
-
-[module/mpd]
-type = internal/mpd
-;format-online = <toggle> <label-song> 
-format-online =  <label-song> 
-
-icon-play = 
-icon-pause = 
-
-label-song-maxlen = 25
-label-song-ellipsis = true
-
-;==========================================================
+;; cpu
 
 [module/battery]
 type = internal/battery
@@ -244,8 +244,8 @@ ramp-capacity-2 = 
 ramp-capacity-3 =   
 ramp-capacity-4 =   
 
-ramp-capacity-0-foreground = ${color.red}
-ramp-capacity-foreground   = ${color.fg}
+ramp-capacity-0-foreground = ${colors.red}
+ramp-capacity-foreground   = ${colors.fg}
 bar-capacity-width = 10
 
 animation-charging-0 = " "
@@ -255,57 +255,7 @@ animation-charging-3 = " "
 animation-charging-4 = " "
 
 animation-charging-framerate = 750
-
-[module/volume]
-type = internal/alsa
-;speaker-mixer = Speaker
-;headphone-mixer = Headphone
-;headphone-id = 16
-;mapped = true
-format-volume = <label-volume>
-format-underline= ${color.amber}
-label-volume =  %percentage%%
-label-muted = muted
-
-[module/pulseaudio]
-type = internal/pulseaudio
-
-format-volume = <label-volume>
-label-volume =  %percentage%%
-label-volume-foreground = ${color.fg}
-
-label-muted =   muted
-label-muted-foreground = ${color.fg-alt}
-
-bar-volume-width = 10
-bar-volume-foreground-0 = #55aa55
-bar-volume-foreground-1 = #55aa55
-bar-volume-foreground-2 = #55aa55
-bar-volume-foreground-3 = #55aa55
-bar-volume-foreground-4 = #55aa55
-bar-volume-foreground-5 = #f5a70a
-bar-volume-foreground-6 = #ff5555
-bar-volume-gradient = false
-bar-volume-indicator = |
-bar-volume-indicator-font = 2
-bar-volume-fill = ─
-bar-volume-fill-font = 2
-bar-volume-empty = ─
-bar-volume-empty-font = 2
-bar-volume-empty-foreground = ${color.fg-alt}
-
-[module/date]
-type = internal/date
-interval = 5
-
-date ="  %b, %d"
-
-time = " %H:%M" 
-
-format-prefix =
-format-prefix-foreground = ${color.fg-alt}
-format-underline = ${color.amber}
-
-label = "%date%  %time%"
+;; battery
 
 ;== EOF ========================================================
+; vim:ft=dosini
