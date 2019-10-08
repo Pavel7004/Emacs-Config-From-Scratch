@@ -1,4 +1,5 @@
 * Secure code editor
+reference: https://gitlab.com/buildfunthings/emacs-config
 #+BEGIN_SRC emacs-lisp
     (require 'cl)
     (setq tls-checktrust t)
@@ -172,11 +173,24 @@
 
   (global-set-key (kbd "C-c r") 'config-reload)
 #+END_SRC
-** disable bars
+** disable GUI elements
+*** get rid of startup message
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-message t)
+#+END_SRC
+*** disable dialog box
+#+BEGIN_SRC emacs-lisp
+  (setq use-dialog-box nil)
+#+END_SRC
+*** disable bars
 #+BEGIN_SRC emacs-lisp
   (tool-bar-mode -1)
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
+#+END_SRC
+*** disable hello file function
+#+BEGIN_SRC emacs-lisp
+  (global-unset-key (kbd "C-h h"))
 #+END_SRC
 ** decrease scrolling
 #+BEGIN_SRC emacs-lisp
@@ -200,16 +214,12 @@
 *** C/C++
 #+BEGIN_SRC emacs-lisp
   (defun my-c-style ()
-    (c-set-style "k&r")
+    (c-set-style "gnu")
     (turn-on-font-lock)
-    (setq tab-width 4))
+    (setq tab-width 2))
 
   (add-hook 'c-mode-hook 'my-c-style)
   (add-hook 'c++-mode-hook 'my-c-style)
-#+END_SRC
-** get rid of startup message
-#+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-message t)
 #+END_SRC
 ** electric
 #+BEGIN_SRC emacs-lisp
@@ -232,6 +242,78 @@
 #+BEGIN_SRC emacs-lisp
   (setq find-file-visit-truename t)
 #+END_SRC
+
+** recentf mode
+#+BEGIN_SRC emacs-lisp
+  (use-package recentf
+    :config
+    (recentf-mode 1)
+    (setq recentf-save-file "~/.emacs.d/recentf")
+    (setq recentf-max-menu-items 10)
+    (setq recentf-max-saved-items 100)
+    (setq recentf-show-file-shortcuts-flag nil)
+
+    ;; Magic advice to rename entries in recentf when moving files in
+    ;; dired.
+    (defun rjs/recentf-rename-notify (oldname newname &rest args)
+      (if (file-directory-p newname)
+          (rjs/recentf-rename-directory oldname newname)
+        (rjs/recentf-rename-file oldname newname)))
+
+    (defun rjs/recentf-rename-file (oldname newname)
+      (setq recentf-list
+            (mapcar (lambda (name)
+                      (if (string-equal name oldname)
+                          newname
+                        oldname))
+                    recentf-list))
+      recentf-cleanup)
+
+    (defun rjs/recentf-rename-directory (oldname newname)
+      ;; oldname, newname and all entries of recentf-list should already
+      ;; be absolute and normalised so I think this can just test whether
+      ;; oldname is a prefix of the element.
+      (setq recentf-list
+            (mapcar (lambda (name)
+                      (if (string-prefix-p oldname name)
+                          (concat newname (substring name (length oldname)))
+                        name))
+                    recentf-list))
+      recentf-cleanup)
+
+    (advice-add 'dired-rename-file :after #'rjs/recentf-rename-notify)
+
+    (defun contrib/recentf-add-dired-directory ()
+      "Include Dired buffers in the list.  Particularly useful when
+  combined with Ido's ability to display virtual buffers."
+      (when (and (stringp dired-directory)
+                 (equal "" (file-name-nondirectory dired-directory)))
+        (recentf-add-file dired-directory)))
+
+    (defun contrib/ido-choose-from-recentf ()
+      "Use ido to select a recently opened file from the
+  `recentf-list'.  The full path to the user's home directory is
+  truncated into a tilde."
+      (interactive)
+      (let ((home (expand-file-name (getenv "HOME"))))
+        (find-file
+         (ido-completing-read "Recentf open: "
+                              (mapcar (lambda (path)
+                                        (replace-regexp-in-string home "~" path))
+                                      recentf-list)
+                              nil t))))
+
+    :bind ("C-x C-r" . contrib/ido-choose-from-recentf))
+#+END_SRC
+
+** save cursor position
+#+BEGIN_SRC emacs-lisp
+  (use-package saveplace
+    :config
+    (save-place-mode 1)
+    (setq save-place-file "~/.emacs.d/saveplace"))
+#+END_SRC
+
 
 
 * Packages
@@ -324,7 +406,9 @@
 #+BEGIN_SRC emacs-lisp
   (use-package magit
     :ensure t
-    :bind (("C-c m" . magit-status)))
+    :bind ("C-c m" . magit-status)
+    :config
+    (setq magit-completing-read-function 'magit-ido-completing-read))
 
   (use-package magit-gitflow
     :ensure t
@@ -353,7 +437,10 @@
     :ensure t
     :hook (prog-mode . projectile-mode)
     :bind ("<f5>" . 'projectile-compile-project)
-    :bind-keymap ("C-c p" . projectile-command-map))
+    :bind-keymap ("C-c p" . projectile-command-map)
+    :config
+    (setq projectile-completion-system 'ido)
+    (setq projectile-enable-caching t))
 #+END_SRC
 ** all the icons
 #+BEGIN_SRC emacs-lisp
@@ -388,38 +475,126 @@
 
 ** spell checking
 #+BEGIN_SRC emacs-lisp
-  (defun spell-buffer-english ()
-    (interactive)
-    (ispell-change-dictionary "en_US")
-    (flyspell-buffer))
-
-  (use-package ispell
+  ;; (use-package flyspell
+  ;;   :init
+  ;;   (setq ispell-program-name "hunspell")
+  ;;   (setq ispell-local-dictionary "en_US")
+  ;;   (setq flyspell-issue-message-flag nil)
+  ;;   (setq flyspell-issue-welcome-flag nil)
+  ;;   (setq ispell-local-dictionary-alist
+  ;;         '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8)
+  ;;           ))
+  ;; :config
+  ;; (define-key flyspell-mode-map (kbd "C-;") nil)
+  ;; :hook
+  ;; (text-mode . flyspell-mode)
+  ;; (prog-mode . flyspell-prog-mode))
+#+END_SRC
+** treemacs
+#+BEGIN_SRC emacs-lisp
+  (use-package treemacs
+    :ensure t
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
-    (when (executable-find "hunspell")
-      (setq-default ispell-program-name "hunspell")
-      (setq ispell-really-hunspell t))
+    (progn
+      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+            treemacs-deferred-git-apply-delay      0.5
+            treemacs-display-in-side-window        f
+            treemacs-eldoc-display                 t
+            treemacs-file-event-delay              5000
+            treemacs-file-follow-delay             0.2
+            treemacs-follow-after-init             t
+            treemacs-git-command-pipe              ""
+            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-indentation                   2
+            treemacs-indentation-string            " "
+            treemacs-is-never-other-window         nil
+            treemacs-max-git-entries               5000
+            treemacs-missing-project-action        'ask
+            treemacs-no-png-images                 nil
+            treemacs-no-delete-other-windows       t
+            treemacs-project-follow-cleanup        nil
+            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-position                      'left
+            treemacs-recenter-distance             0.1
+            treemacs-recenter-after-file-follow    nil
+            treemacs-recenter-after-tag-follow     nil
+            treemacs-recenter-after-project-jump   'always
+            treemacs-recenter-after-project-expand 'on-distance
+            treemacs-show-cursor                   nil
+            treemacs-show-hidden-files             t
+            treemacs-silent-filewatch              nil
+            treemacs-silent-refresh                nil
+            treemacs-sorting                       'alphabetic-desc
+            treemacs-space-between-root-nodes      t
+            treemacs-tag-follow-cleanup            t
+            treemacs-tag-follow-delay              1.5
+            treemacs-width                         35)
 
-    ;; (setq ispell-program-name "aspell"
-    ;;       ispell-extra-args '("--sug-mode=ultra"))
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode t)
+      (pcase (cons (not (null (executable-find "git")))
+                   (not (null treemacs-python-executable)))
+        (`(t . t)
+         (treemacs-git-mode 'deferred))
+        (`(t . _)
+         (treemacs-git-mode 'simple))))
     :bind
-    ("C-c e" . spell-buffer-english))
+    (:map global-map
+          ("M-0"       . treemacs-select-window)
+          ("C-x t 1"   . treemacs-delete-other-windows)
+          ("C-x t t"   . treemacs)
+          ("C-x t B"   . treemacs-bookmark)
+          ("C-x t C-t" . treemacs-find-file)
+          ("C-x t M-t" . treemacs-find-tag)))
 
-  (dolist (hook '(text-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode 1) (visual-line-mode 1))))
+  (use-package treemacs-projectile
+    :after treemacs projectile
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :after treemacs dired
+    :ensure t
+    :config (treemacs-icons-dired-mode))
+
+  (use-package treemacs-magit
+    :after treemacs magit
+    :ensure t)
 #+END_SRC
 
 
-* ido
+* ido and ibuffer
 ** enable ido mode
 #+BEGIN_SRC emacs-lisp
-  (setq ido-enable-flex-matching nil)
-  (setq ido-create-new-buffer 'always)
-  (setq ido-everywhere t)
-  (ido-mode 1)
+  (use-package ido
+    :config
+    (setq ido-enable-flex-matching nil)
+    (setq ido-create-new-buffer 'always)
+    (setq ido-everywhere t)
+    (setq ido-confirm-unique-completion nil)
+    (setq ido-all-frames nil)
+    (ido-mode 1))
 #+END_SRC
-** switch buffer
+** enable ibuffer
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-x C-b") 'ibuffer)
+  (use-package ibuffer
+    :config
+    (setq ibuffer-display-summary nil)
+    (setq ibuffer-use-other-window nil)
+    :bind ("C-x C-b" . ibuffer))
+
+  (use-package ibuffer-projectile
+    :ensure t
+    :after (ibuffer projectile)
+    :hook
+    (ibuffer . (lambda ()
+                 (ibuffer-projectile-set-filter-groups)
+                 (unless (eq ibuffer-sorting-mode 'recency)
+                   (ibuffer-do-sort-by-recency)))))
 #+END_SRC
 
 
@@ -459,4 +634,50 @@
   (with-eval-after-load 'company
     (add-hook 'c++-mode-hook 'company-mode)
     (add-hook 'c-mode-hook 'company-mode))
+#+END_SRC
+
+
+
+* dired
+reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
+** base settings
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :config
+    (setq dired-recursive-copies 'always)
+    (setq dired-recursive-deletes 'always)
+    (setq dired-isearch-filenames 'dwim)
+    (setq delete-by-moving-to-trash t)
+    (setq dired-listing-switches "-AFlv --group-directories-first")
+    (setq dired-dwim-target t)
+
+    :hook (dired-mode . dired-hide-details-mode)
+    :bind (("s-d" . dired)
+           ("s-D" . dired-other-window)))
+
+  (use-package find-dired
+    :after dired
+    :config
+    (setq find-ls-option ;; applies to `find-name-dired'
+          '("-ls" . "-AFlv --group-directories-first"))
+    (setq find-name-arg "-iname"))
+
+  (use-package dired-async
+    :after dired
+    :config
+    (dired-async-mode 1))
+#+END_SRC
+** file previews
+#+BEGIN_SRC emacs-lisp
+  (use-package peep-dired
+    :ensure t
+    :after dired
+    :bind (:map dired-mode-map
+                ("P" . peep-dired))
+    :config
+    (setq peep-dired-cleanup-on-disable t)
+    (setq peep-dired-ignored-extensions '("mkv" "webm" "mp4" "mp3" "ogg" "iso")))
+
+  ;; ;; use this for peep always on
+  ;; (setq peep-dired-enable-on-directories t)
 #+END_SRC
