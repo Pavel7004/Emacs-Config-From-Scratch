@@ -150,7 +150,8 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+END_SRC
 
 
-* Editor
+
+* Basic settings
 ** utf-8 coding
 #+BEGIN_SRC emacs-lisp
   (setq locale-coding-system 'utf-8)
@@ -158,11 +159,6 @@ reference: https://gitlab.com/buildfunthings/emacs-config
   (set-keyboard-coding-system 'utf-8)
   (set-selection-coding-system 'utf-8)
   (prefer-coding-system 'utf-8)
-#+END_SRC
-** enable line highlight
-#+BEGIN_SRC emacs-lisp
-  (when window-system
-    (global-hl-line-mode t))
 #+END_SRC
 ** reload config
 #+BEGIN_SRC emacs-lisp
@@ -210,21 +206,6 @@ reference: https://gitlab.com/buildfunthings/emacs-config
   (setq display-time-24hr-format t)
   (display-time-mode 1)
 #+END_SRC
-** code style
-*** C/C++
-#+BEGIN_SRC emacs-lisp
-  (defun my-c-style ()
-    (c-set-style "gnu")
-    (turn-on-font-lock)
-    (setq tab-width 2))
-
-  (add-hook 'c-mode-hook 'my-c-style)
-  (add-hook 'c++-mode-hook 'my-c-style)
-#+END_SRC
-** electric
-#+BEGIN_SRC emacs-lisp
-  (electric-pair-mode t)
-#+END_SRC
 ** Terminal
 *** set default shell to bash
 #+BEGIN_SRC emacs-lisp 
@@ -233,17 +214,125 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     (interactive (list my-term-shell)))
   (ad-activate 'ansi-term)
 #+END_SRC
-** org mode
-*** org indent
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'org-mode-hook 'org-indent-mode)
-#+END_SRC
 ** real names in symbolic links
 #+BEGIN_SRC emacs-lisp
   (setq find-file-visit-truename t)
 #+END_SRC
+* Basic packages
+** all the icons
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons
+    :ensure t)
+#+END_SRC
+** which-key
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :ensure t
+    :diminish which-key-mode
+    :init
+    (which-key-mode))
+#+END_SRC
+** diminish
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish
+    :ensure t)
+#+END_SRC
+** Async processes wherever possible
+#+BEGIN_SRC emacs-lisp
+  (use-package async
+    :ensure t)
+#+END_SRC
 
-** recentf mode
+
+* ido and ibuffer
+** enable ido mode
+#+BEGIN_SRC emacs-lisp
+  (use-package ido
+    :init (progn
+            (ido-mode)
+            (ido-everywhere))
+    :config
+    (setq ido-enable-flex-matching nil)
+    (setq ido-create-new-buffer 'always)
+    (setq ido-confirm-unique-completion nil)
+    (setq ido-all-frames nil))
+#+END_SRC
+** ido-vertical
+#+BEGIN_SRC emacs-lisp
+  (use-package ido-vertical-mode
+    :ensure t
+    :init
+    (ido-vertical-mode 1)
+    :config
+    (setq ido-vertical-define-keys 'C-n-and-C-p-only))
+#+END_SRC
+** enable ibuffer
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer
+    :config
+    (setq ibuffer-display-summary nil)
+    (setq ibuffer-use-other-window nil)
+    :bind ("C-x C-b" . ibuffer))
+
+  (use-package ibuffer-projectile
+    :ensure t
+    :after (ibuffer projectile)
+    :hook
+    (ibuffer . (lambda ()
+                 (ibuffer-projectile-set-filter-groups)
+                 (unless (eq ibuffer-sorting-mode 'recency)
+                   (ibuffer-do-sort-by-recency)))))
+#+END_SRC
+** smex(Ido like M-x menu)
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :ensure t
+    :init (smex-initialize)
+    :bind ("M-x" . smex))
+#+END_SRC
+* dired
+reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
+** base settings
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :config
+    (setq dired-recursive-copies 'always)
+    (setq dired-recursive-deletes 'always)
+    (setq dired-isearch-filenames 'dwim)
+    (setq delete-by-moving-to-trash t)
+    (setq dired-listing-switches "-AFlv --group-directories-first")
+    (setq dired-dwim-target t)
+    ;;:hook (dired-mode . dired-hide-details-mode)
+    :bind (("C-c d" . dired)
+           ("C-c D" . dired-other-window)))
+
+  (use-package find-dired
+    :after dired
+    :config
+    (setq find-ls-option ;; applies to `find-name-dired'
+          '("-ls" . "-AFlv --group-directories-first"))
+    (setq find-name-arg "-iname"))
+
+  (use-package dired-async
+    :after dired
+    :config
+    (dired-async-mode 1))
+#+END_SRC
+** file previews
+#+BEGIN_SRC emacs-lisp
+  (use-package peep-dired
+    :ensure t
+    :after dired
+    :bind (:map dired-mode-map
+                ("P" . peep-dired))
+    :config
+    (setq peep-dired-cleanup-on-disable t)
+    (setq peep-dired-ignored-extensions '("mkv" "webm" "mp4" "mp3" "ogg" "iso")))
+
+  ;; ;; use this for peep always on
+  ;; (setq peep-dired-enable-on-directories t)
+#+END_SRC
+* recentf mode
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :config
@@ -305,8 +394,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 
     :bind ("C-x C-r" . contrib/ido-choose-from-recentf))
 #+END_SRC
-
-** save cursor position
+* save cursor position
 #+BEGIN_SRC emacs-lisp
   (use-package saveplace
     :config
@@ -315,71 +403,32 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+END_SRC
 
 
+* code style
+** C/C++
+#+BEGIN_SRC emacs-lisp
+  (defun my-c-style ()
+    (c-set-style "gnu")
+    (turn-on-font-lock)
+    (setq tab-width 2))
 
-* Packages
-** diminish
-#+BEGIN_SRC emacs-lisp
-  (use-package diminish
-    :ensure t)
+  (add-hook 'c-mode-hook 'my-c-style)
+  (add-hook 'c++-mode-hook 'my-c-style)
 #+END_SRC
-** which-key
+** enable line highlight
 #+BEGIN_SRC emacs-lisp
-  (use-package which-key
-    :ensure t
-    :diminish which-key-mode
-    :init
-    (which-key-mode))
+  (when window-system
+    (global-hl-line-mode t))
 #+END_SRC
-** ido-vertical
+** electric(auto closing brackets)
 #+BEGIN_SRC emacs-lisp
-  (use-package ido-vertical-mode
-    :ensure t
-    :init
-    (ido-vertical-mode 1))
-
-  (setq ido-vertical-define-keys 'C-n-and-C-p-only)
-#+END_SRC
-** smex(M-x menu)
-#+BEGIN_SRC emacs-lisp
-  (use-package smex
-    :ensure t
-    :init (smex-initialize)
-    :bind ("M-x" . smex))
+  (electric-pair-mode t)
 #+END_SRC
 ** rainbow(colored hex colors)
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package rainbow-mode
-  ;;   :ensure t
-  ;;   :diminish rainbow-mode
-  ;;   :hook (prog-mode . rainbow-mode))
-#+END_SRC
-** nord colorscheme
-#+BEGIN_SRC emacs-lisp
-  (use-package nord-theme
+  (use-package rainbow-mode
     :ensure t
-    :config
-    (load-theme 'nord t))
-#+END_SRC
-** set mode line
-#+BEGIN_SRC emacs-lisp
-  (use-package doom-modeline
-    :ensure t
-    :hook (after-init . doom-modeline-mode)
-    :config (setq doom-modeline-height 34))
-
-  (use-package minions
-    :ensure t
-    :config (minions-mode 1))
-#+END_SRC
-** yasnippet
-#+BEGIN_SRC emacs-lisp
-  (use-package yasnippet
-    :ensure t
-    :hook (prog-mode . yas-minor-mode)
-    :config
-    (use-package yasnippet-snippets
-      :ensure t)
-    (yas-reload-all))
+    :diminish rainbow-mode
+    :hook (org-mode . rainbow-mode))
 #+END_SRC
 ** agressive indent
 #+BEGIN_SRC emacs-lisp
@@ -388,66 +437,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :config
     (global-aggressive-indent-mode 1))
 #+END_SRC
-** org-mode bullets
-#+BEGIN_SRC emacs-lisp
-  (use-package org-bullets
-    :ensure t
-    :hook
-    (org-mode . org-bullets-mode))
-#+END_SRC
-** swiper
-#+BEGIN_SRC emacs-lisp
-  (use-package swiper
-    :ensure t
-    :bind
-    ("C-s" . swiper))
-#+END_SRC
-** magit (version control)
-#+BEGIN_SRC emacs-lisp
-  (use-package magit
-    :ensure t
-    :bind ("C-c m" . magit-status)
-    :config
-    (setq magit-completing-read-function 'magit-ido-completing-read))
-
-  (use-package magit-gitflow
-    :ensure t
-    :hook 
-    (magit-mode . turn-on-magit-gitflow))
-
-  (use-package git-gutter
-    :ensure t
-    :config
-    (global-git-gutter-mode 1))
-#+END_SRC
-** flycheck
-#+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :ensure t
-    :init (global-flycheck-mode))
-
-  (use-package flycheck-pos-tip
-    :ensure t
-    :after flycheck
-    :hook (flycheck-mode . flycheck-pos-tip-mode))
-#+END_SRC
-** projectile
-#+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :ensure t
-    :hook (prog-mode . projectile-mode)
-    :bind ("<f5>" . 'projectile-compile-project)
-    :bind-keymap ("C-c p" . projectile-command-map)
-    :config
-    (setq projectile-completion-system 'ido)
-    (setq projectile-enable-caching t))
-#+END_SRC
-** all the icons
-#+BEGIN_SRC emacs-lisp
-  (use-package all-the-icons
-    :ensure t)
-#+END_SRC
-** line numbers in prog mode
+** line numbers
 #+BEGIN_SRC emacs-lisp
   (use-package linum-relative
     :ensure t
@@ -455,7 +445,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :config
     (setq linum-relative-current-symbol ""))
 #+END_SRC
-** highlight indents in prog mode
+** highlight indents in elisp mode
 #+BEGIN_SRC emacs-lisp
   (use-package highlight-indent-guides
     :ensure t
@@ -467,71 +457,152 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     (setq highlight-indent-guides-auto-character-face-perc 50)
     (setq highlight-indent-guides-responsive 'top))
 #+END_SRC
-** Async processes wherever possible
+* org mode settings
+** org indent
 #+BEGIN_SRC emacs-lisp
-  (use-package async
-    :ensure t)
+  (use-package org
+    :hook (org-mode . org-indent-mode))
+#+END_SRC
+** org-mode bullets
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :after org
+    :ensure t
+    :hook
+    (org-mode . org-bullets-mode))
+#+END_SRC
+* apperiance settings
+** set mode line
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :hook (after-init . doom-modeline-mode)
+    :config
+    (setq doom-modeline-height 34)
+    (setq doom-modeline-minor-modes (featurep 'minions)))
+
+  (use-package minions
+    :ensure t
+    :config (minions-mode 1))
+#+END_SRC
+** colorscheme
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :ensure t
+    :config
+    (load-theme 'doom-nord t)
+    ;; treemacs
+    (setq doom-themes-treemacs-theme "doom-atom")
+    (doom-themes-treemacs-config)
+    ;; org mode
+    (doom-themes-org-config))
 #+END_SRC
 
-** spell checking
+
+* auto completion
+** company
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package flyspell
-  ;;   :init
-  ;;   (setq ispell-program-name "hunspell")
-  ;;   (setq ispell-local-dictionary "en_US")
-  ;;   (setq flyspell-issue-message-flag nil)
-  ;;   (setq flyspell-issue-welcome-flag nil)
-  ;;   (setq ispell-local-dictionary-alist
-  ;;         '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8)
-  ;;           ))
-  ;; :config
-  ;; (define-key flyspell-mode-map (kbd "C-;") nil)
-  ;; :hook
-  ;; (text-mode . flyspell-mode)
-  ;; (prog-mode . flyspell-prog-mode))
+  (use-package company
+    :defer t
+    :ensure t
+    :init
+    (setq company-idle-delay 0)
+    (setq company-minimum-prefix-length 3)
+    (global-company-mode))
+
+  ;;(with-eval-after-load 'company
+  ;;  (define-key company-active-map (kbd "<tab>") #'company-select-next)
+  ;;  (define-key company-active-map (kbd "<S-tab>") #'company-select-previous))
 #+END_SRC
-** treemacs
+** company irony
+#+BEGIN_SRC emacs-lisp
+  (use-package company-irony
+    :ensure t
+    :after (company irony)
+    :config
+    (require 'company)
+    (add-to-list 'company-backends 'company-irony))
+
+  (use-package irony
+    :after company
+    :ensure t
+    :hook ((c++-mode . irony-mode)
+           (c-mode . irony-mode)
+           (irony-mode . irony-cdb-autosetup-compile-options)))
+
+  (use-package flycheck-irony
+    :after (flycheck irony)
+    :ensure t
+    :hook (irony-mode . flycheck-irony-setup))
+#+END_SRC
+** yasnippet
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :hook (prog-mode . yas-minor-mode)
+    :config
+    (use-package yasnippet-snippets
+      :ensure t)
+    (yas-reload-all))
+#+END_SRC
+* projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :hook (prog-mode . projectile-mode)
+    :bind ("<f5>" . 'projectile-compile-project)
+    :bind-keymap ("C-c p" . projectile-command-map)
+    :config
+    (setq projectile-completion-system 'ido)
+    (setq projectile-enable-caching t))
+#+END_SRC
+* magit (version control)
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :ensure t
+    :bind ("C-c m" . magit-status)
+    :config
+    (setq magit-completing-read-function 'magit-ido-completing-read))
+
+  (use-package magit-gitflow
+    :after magit
+    :ensure t
+    :hook 
+    (magit-mode . turn-on-magit-gitflow))
+
+  ;; (use-package git-gutter
+  ;;   :after linum-relative
+  ;;   :ensure t
+  ;;   :init
+  ;;   (git-gutter:linum-setup)
+  ;;   (custom-set-variables
+  ;;    '(git-gutter:modified-sign " ")
+  ;;    '(git-gutter:added-sign " ")
+  ;;    '(git-gutter:deleted-sign " "))
+  ;;   (set-face-background 'git-gutter:modified "purple")
+  ;;   (set-face-background 'git-gutter:added "green")
+  ;;   (set-face-background 'git-gutter:deleted "red")
+  ;;   :config
+  ;;   (global-git-gutter-mode t))
+
+  ;; (use-package git-gutter-fringe
+  ;;   :ensure t
+  ;;   :after git-gutter
+  ;;   :config
+  ;;   (setq-default left-fringe-width 5))
+#+END_SRC
+* treemacs
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
     :ensure t
     :defer t
-    :init
-    (with-eval-after-load 'winum
-      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
     :config
     (progn
       (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-            treemacs-deferred-git-apply-delay      0.5
-            treemacs-display-in-side-window        f
-            treemacs-eldoc-display                 t
-            treemacs-file-event-delay              5000
-            treemacs-file-follow-delay             0.2
-            treemacs-follow-after-init             t
-            treemacs-git-command-pipe              ""
-            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-display-in-side-window        nil
             treemacs-indentation                   2
             treemacs-indentation-string            " "
-            treemacs-is-never-other-window         nil
-            treemacs-max-git-entries               5000
-            treemacs-missing-project-action        'ask
-            treemacs-no-png-images                 nil
-            treemacs-no-delete-other-windows       t
-            treemacs-project-follow-cleanup        nil
-            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-            treemacs-position                      'left
-            treemacs-recenter-distance             0.1
-            treemacs-recenter-after-file-follow    nil
-            treemacs-recenter-after-tag-follow     nil
-            treemacs-recenter-after-project-jump   'always
-            treemacs-recenter-after-project-expand 'on-distance
-            treemacs-show-cursor                   nil
-            treemacs-show-hidden-files             t
-            treemacs-silent-filewatch              nil
-            treemacs-silent-refresh                nil
-            treemacs-sorting                       'alphabetic-desc
-            treemacs-space-between-root-nodes      t
-            treemacs-tag-follow-cleanup            t
-            treemacs-tag-follow-delay              1.5
+            treemacs-is-never-other-window         t
             treemacs-width                         35)
 
       (treemacs-follow-mode t)
@@ -545,7 +616,6 @@ reference: https://gitlab.com/buildfunthings/emacs-config
          (treemacs-git-mode 'simple))))
     :bind
     (:map global-map
-          ("M-0"       . treemacs-select-window)
           ("C-x t 1"   . treemacs-delete-other-windows)
           ("C-x t t"   . treemacs)
           ("C-x t B"   . treemacs-bookmark)
@@ -565,119 +635,38 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :after treemacs magit
     :ensure t)
 #+END_SRC
-
-
-* ido and ibuffer
-** enable ido mode
+* swiper(C-s search)
 #+BEGIN_SRC emacs-lisp
-  (use-package ido
-    :config
-    (setq ido-enable-flex-matching nil)
-    (setq ido-create-new-buffer 'always)
-    (setq ido-everywhere t)
-    (setq ido-confirm-unique-completion nil)
-    (setq ido-all-frames nil)
-    (ido-mode 1))
+  (use-package swiper
+    :ensure t
+    :bind
+    ("C-s" . swiper))
 #+END_SRC
-** enable ibuffer
+* flycheck
 #+BEGIN_SRC emacs-lisp
-  (use-package ibuffer
-    :config
-    (setq ibuffer-display-summary nil)
-    (setq ibuffer-use-other-window nil)
-    :bind ("C-x C-b" . ibuffer))
-
-  (use-package ibuffer-projectile
+  (use-package flycheck
     :ensure t
-    :after (ibuffer projectile)
-    :hook
-    (ibuffer . (lambda ()
-                 (ibuffer-projectile-set-filter-groups)
-                 (unless (eq ibuffer-sorting-mode 'recency)
-                   (ibuffer-do-sort-by-recency)))))
+    :init (global-flycheck-mode))
+
+  (use-package flycheck-pos-tip
+    :ensure t
+    :after flycheck
+    :hook (flycheck-mode . flycheck-pos-tip-mode))
 #+END_SRC
-
-
-* auto completion
-** company package
+* spell checking
 #+BEGIN_SRC emacs-lisp
-  (use-package company
-    :ensure t
-    :hook (after-init . global-company-mode)
-    :init
-    (setq company-idle-delay 0)
-    (setq company-minimum-prefix-length 3))
-
-  ;(with-eval-after-load 'company
-  ;  (define-key company-active-map (kbd "<tab>") #'company-select-next)
-  ;  (define-key company-active-map (kbd "<S-tab>") #'company-select-previous))
-#+END_SRC
-** company irony
-#+BEGIN_SRC emacs-lisp
-  (use-package company-irony
-    :ensure t
-    :after company
-    :config
-    (require 'company)
-    (add-to-list 'company-backends 'company-irony))
-
-  (use-package irony
-    :ensure t
-    :hook ((c++-mode . irony-mode)
-           (c-mode . irony-mode)
-           (irony-mode . irony-cdb-autosetup-compile-options)))
-
-  (use-package flycheck-irony
-    :ensure t
-    :hook (irony-mode . flycheck-irony-setup))
-
-  (with-eval-after-load 'company
-    (add-hook 'c++-mode-hook 'company-mode)
-    (add-hook 'c-mode-hook 'company-mode))
-#+END_SRC
-
-
-
-* dired
-reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
-** base settings
-#+BEGIN_SRC emacs-lisp
-  (use-package dired
-    :config
-    (setq dired-recursive-copies 'always)
-    (setq dired-recursive-deletes 'always)
-    (setq dired-isearch-filenames 'dwim)
-    (setq delete-by-moving-to-trash t)
-    (setq dired-listing-switches "-AFlv --group-directories-first")
-    (setq dired-dwim-target t)
-
-    :hook (dired-mode . dired-hide-details-mode)
-    :bind (("s-d" . dired)
-           ("s-D" . dired-other-window)))
-
-  (use-package find-dired
-    :after dired
-    :config
-    (setq find-ls-option ;; applies to `find-name-dired'
-          '("-ls" . "-AFlv --group-directories-first"))
-    (setq find-name-arg "-iname"))
-
-  (use-package dired-async
-    :after dired
-    :config
-    (dired-async-mode 1))
-#+END_SRC
-** file previews
-#+BEGIN_SRC emacs-lisp
-  (use-package peep-dired
-    :ensure t
-    :after dired
-    :bind (:map dired-mode-map
-                ("P" . peep-dired))
-    :config
-    (setq peep-dired-cleanup-on-disable t)
-    (setq peep-dired-ignored-extensions '("mkv" "webm" "mp4" "mp3" "ogg" "iso")))
-
-  ;; ;; use this for peep always on
-  ;; (setq peep-dired-enable-on-directories t)
+  ;; (use-package flyspell
+  ;;   :init
+  ;;   (setq ispell-program-name "hunspell")
+  ;;   (setq ispell-local-dictionary "en_US")
+  ;;   (setq flyspell-issue-message-flag nil)
+  ;;   (setq flyspell-issue-welcome-flag nil)
+  ;;   (setq ispell-local-dictionary-alist
+  ;;         '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8)
+  ;;           ))
+  ;; :config
+  ;; (define-key flyspell-mode-map (kbd "C-;") nil)
+  ;; :hook
+  ;; (text-mode . flyspell-mode)
+  ;; (prog-mode . flyspell-prog-mode))
 #+END_SRC
