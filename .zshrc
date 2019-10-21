@@ -43,3 +43,6 @@ alias gadd='git add'
 alias gpush='git push'
 alias gpull='git pull'
 #####################
+
+##### enviroment variables #####
+export EDITOR="emacs -nw"
