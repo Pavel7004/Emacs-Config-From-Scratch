@@ -1,3 +1,5 @@
+#+STARTUP: overview
+
 * Secure code editor
 reference: https://gitlab.com/buildfunthings/emacs-config
 #+BEGIN_SRC emacs-lisp
@@ -237,6 +239,14 @@ reference: https://gitlab.com/buildfunthings/emacs-config
   (use-package diminish
     :ensure t)
 #+END_SRC
+** hydra
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra
+    :ensure t)
+
+  (use-package use-package-hydra
+    :ensure t)
+#+END_SRC
 ** Async processes wherever possible
 #+BEGIN_SRC emacs-lisp
   (use-package async
@@ -248,9 +258,9 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** enable ido mode
 #+BEGIN_SRC emacs-lisp
   (use-package ido
-    :init (progn
-            (ido-mode)
-            (ido-everywhere))
+    :init
+    (ido-mode)
+    (ido-everywhere)
     :config
     (setq ido-enable-flex-matching nil)
     (setq ido-create-new-buffer 'always)
@@ -291,7 +301,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :bind ("M-x" . smex))
 #+END_SRC
 * dired
-reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
+source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 ** base settings
 #+BEGIN_SRC emacs-lisp
   (use-package dired
@@ -333,6 +343,7 @@ reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   ;; (setq peep-dired-enable-on-directories t)
 #+END_SRC
 * recentf mode
+source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 #+BEGIN_SRC emacs-lisp
   (use-package recentf
     :config
@@ -499,13 +510,19 @@ reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 #+END_SRC
 
 
+* expand region
+#+BEGIN_SRC emacs-lisp
+  (use-package expand-region
+    :ensure t
+    :bind ("C-=" . er/expand-region))
+#+END_SRC
 * auto completion
 ** company
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :defer t
     :ensure t
-    :init
+    :config
     (setq company-idle-delay 0)
     (setq company-minimum-prefix-length 3)
     (global-company-mode))
@@ -538,6 +555,7 @@ reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 ** yasnippet
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
+    :defer t
     :ensure t
     :hook (prog-mode . yas-minor-mode)
     :config
@@ -567,29 +585,39 @@ reference: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package magit-gitflow
     :after magit
     :ensure t
-    :hook 
-    (magit-mode . turn-on-magit-gitflow))
+    :hook (magit-mode . turn-on-magit-gitflow))
 
-  ;; (use-package git-gutter
-  ;;   :after linum-relative
-  ;;   :ensure t
-  ;;   :init
-  ;;   (git-gutter:linum-setup)
-  ;;   (custom-set-variables
-  ;;    '(git-gutter:modified-sign " ")
-  ;;    '(git-gutter:added-sign " ")
-  ;;    '(git-gutter:deleted-sign " "))
-  ;;   (set-face-background 'git-gutter:modified "purple")
-  ;;   (set-face-background 'git-gutter:added "green")
-  ;;   (set-face-background 'git-gutter:deleted "red")
-  ;;   :config
-  ;;   (global-git-gutter-mode t))
-
-  ;; (use-package git-gutter-fringe
-  ;;   :ensure t
-  ;;   :after git-gutter
-  ;;   :config
-  ;;   (setq-default left-fringe-width 5))
+  (use-package git-gutter
+    :after hydra
+    :ensure t
+    :bind (:map prog-mode-map
+                ("<f9>" . hydra-git-gutter/body))
+    :hydra (hydra-git-gutter (:pre (progn (linum-relative-mode -1)
+                                          (git-gutter-mode 1))
+                                   :hint nil)
+                             "
+    Git gutter:
+      _n_ext hunk        _s_tage hunk     _ESC_: quit
+      _p_revious hunk    _r_evert hunk
+      ^ ^                _P_opup hunk
+      _f_irst hunk
+      _l_ast hunk        set start _R_evision
+    "
+                             ("n" git-gutter:next-hunk)
+                             ("p" git-gutter:previous-hunk)
+                             ("f" (progn (goto-char (point-min))
+                                         (git-gutter:next-hunk 1)))
+                             ("l" (progn (goto-char (point-min))
+                                         (git-gutter:previous-hunk 1)))
+                             ("s" git-gutter:stage-hunk)
+                             ("r" git-gutter:revert-hunk)
+                             ("P" git-gutter:popup-hunk)
+                             ("R" git-gutter:set-start-revision)
+                             ("ESC" (progn (git-gutter-mode -1)
+                                           (linum-relative-mode 1)
+                                           (sit-for 0.1)
+                                           (git-gutter:clear))
+                              :color blue)))
 #+END_SRC
 * treemacs
 #+BEGIN_SRC emacs-lisp

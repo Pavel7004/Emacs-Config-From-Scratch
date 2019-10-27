@@ -13,6 +13,11 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
+
 ;;;;;
 
 (setq gc-cons-threshold-original gc-cons-threshold)
@@ -60,7 +65,7 @@
  '(objed-cursor-color "#C16069")
  '(package-selected-packages
    (quote
-    (git-gutter-fringe irony magit magit-gitflow magit-popup page-break-lines async dashboard aggressive-indent doom-themes treemacs-magit treemacs-icons-dired treemacs-projectile treemacs peep-dired ibuffer-projectile rainbow-mode linum-relative swiper highlight-indent-guides doom-modeline minions all-the-icons flycheck-irony flycheck-pos-tip projectile git-gutter flycheck org-bullets dracula-theme aggresive-indent yasnippet company-irony diminish company smex ido-vertical-mode which-key use-package)))
+    (expand-region use-package-hydra git-gutter-fringe irony magit magit-gitflow magit-popup page-break-lines async dashboard aggressive-indent doom-themes treemacs-magit treemacs-icons-dired treemacs-projectile treemacs peep-dired ibuffer-projectile rainbow-mode linum-relative swiper highlight-indent-guides doom-modeline minions all-the-icons flycheck-irony flycheck-pos-tip projectile git-gutter flycheck org-bullets dracula-theme aggresive-indent yasnippet company-irony diminish company smex ido-vertical-mode which-key use-package)))
  '(pdf-view-midnight-colors (quote ("#fdf4c1" . "#1d2021")))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
