@@ -7,19 +7,19 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     (setq tls-checktrust t)
 
     (setq python (or (executable-find "py.exe")
-		     (executable-find "python")
-		     ))
+                     (executable-find "python")
+                     ))
 
     (let ((trustfile
-	   (replace-regexp-in-string
-	    "\\\\" "/"
-	    (replace-regexp-in-string
-	     "\n" ""
-	     (shell-command-to-string (concat python " -m certifi"))))))
+           (replace-regexp-in-string
+            "\\\\" "/"
+            (replace-regexp-in-string
+             "\n" ""
+             (shell-command-to-string (concat python " -m certifi"))))))
       (setq tls-program
-	    (list
-	     (format "gnutls-cli%s --x509cafile %s -p %%p %%h"
-		     (if (eq window-system 'w32) ".exe" "") trustfile)))
+            (list
+             (format "gnutls-cli%s --x509cafile %s -p %%p %%h"
+                     (if (eq window-system 'w32) ".exe" "") trustfile)))
       (setq gnutls-verify-error t)
       (setq gnutls-trustfiles (list trustfile)))
 
@@ -40,118 +40,47 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+END_SRC
 
 
-* dashboard
+* apperiance settings
+** set mode line
 #+BEGIN_SRC emacs-lisp
-  (use-package dashboard
+  (use-package doom-modeline
+    :demand
     :ensure t
-    :hook (after-init . dashboard-setup-startup-hook)
+    :hook (after-init . doom-modeline-mode)
     :config
-    (setq dashboard-startup-banner 'logo)
-    (setq dashboard-center-content nil)
-    (setq dashboard-items '((recents . 5)
-			    (projects . 5)))
-    ;; Add heading icons
-    (defun dashboard-insert-heading-icon (heading &optional _shortcut)
-      "Add heading icons to dashboard."
-      (when (display-graphic-p)
-	;; Load `all-the-icons' if it's unavailable
-	(unless (featurep 'all-the-icons)
-	  (require 'all-the-icons nil t))
+    (setq doom-modeline-height 28)
+    (setq doom-modeline-minor-modes (featurep 'minions)))
 
-	(insert (cond
-		 ((string-equal heading "Recent Files:")
-		  (all-the-icons-octicon "history" :height 1.2 :v-adjust 0.0 :face 'dashboard-heading))
-		 ((string-equal heading "Bookmarks:")
-		  (all-the-icons-octicon "bookmark" :height 1.2 :v-adjust 0.0 :face 'dashboard-heading))
-		 ((string-equal heading "Projects:")
-		  (all-the-icons-octicon "file-directory" :height 1.2 :v-adjust 0.0 :face 'dashboard-heading))))
-	(insert " ")))
-    (advice-add #'dashboard-insert-heading :before #'dashboard-insert-heading-icon)
-
-    ;; Add file icons
-    ;; MUST redefine the sections because of the macro `dashboard-insert-section-list'
-    (defmacro dashboard-insert-section-list (section-name list action &rest rest)
-      "Insert into SECTION-NAME a LIST of items, expanding ACTION and passing REST to widget creation."
-      `(when (car ,list)
-	 (mapc (lambda (el)
-		 (let ((widget nil))
-		   (insert "\n    ")
-		   (when (display-graphic-p)
-		     (insert (when-let ((path (car (last (split-string ,@rest " - ")))))
-			       (if (file-directory-p path)
-				   (cond
-				    ((and (fboundp 'tramp-tramp-file-p)
-					  (tramp-tramp-file-p default-directory))
-				     (all-the-icons-octicon "file-directory" :height 1.0 :v-adjust 0.01))
-				    ((file-symlink-p path)
-				     (all-the-icons-octicon "file-symlink-directory" :height 1.0 :v-adjust 0.01))
-				    ((all-the-icons-dir-is-submodule path)
-				     (all-the-icons-octicon "file-submodule" :height 1.0 :v-adjust 0.01))
-				    ((file-exists-p (format "%s/.git" path))
-				     (all-the-icons-octicon "repo" :height 1.1 :v-adjust 0.01))
-				    (t (let ((matcher (all-the-icons-match-to-alist path all-the-icons-dir-icon-alist)))
-					 (apply (car matcher) (list (cadr matcher) :v-adjust 0.01)))))
-				 (all-the-icons-icon-for-file (file-name-nondirectory path)))))
-		     (insert "\t"))
-		   (setq widget
-			 (widget-create 'push-button
-					:action ,action
-					:mouse-face 'highlight
-					:button-prefix ""
-					:button-suffix ""
-					:format "%[%t%]"
-					,@rest))))
-	       ,list)))
-
-
-    (defmacro dashboard-insert-shortcut (shortcut-char
-					 search-label
-					 &optional no-next-line)
-      "Insert a shortcut SHORTCUT-CHAR for a given SEARCH-LABEL.
-  Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
-      `(progn
-	 (eval-when-compile (defvar dashboard-mode-map))
-	 (let ((sym (make-symbol (format "Jump to \"%s\"" ,search-label))))
-	   (fset sym (lambda ()
-		       (interactive)
-		       (unless (search-forward ,search-label (point-max) t)
-			 (search-backward ,search-label (point-min) t))
-		       ,@(unless no-next-line
-			   '((forward-line 1)))
-		       (back-to-indentation)
-		       (if (display-graphic-p) (widget-forward 1))))
-	   (eval-after-load 'dashboard
-	     (define-key dashboard-mode-map ,shortcut-char sym)))))
-
-    ;; Recentf
-    (defun dashboard-insert-recents (list-size)
-      "Add the list of LIST-SIZE items from recently edited files."
-      (recentf-mode)
-      (dashboard-insert-section
-       "Recent Files:"
-       recentf-list
-       list-size
-       "r"
-       `(lambda (&rest ignore) (find-file-existing ,el))
-       (abbreviate-file-name el)))
-
-    ;; Projectile
-    (defun dashboard-insert-projects (list-size)
-      "Add the list of LIST-SIZE items of projects."
-      (require 'projectile)
-      (projectile-load-known-projects)
-      (dashboard-insert-section
-       "Projects:"
-       (dashboard-subseq (projectile-relevant-known-projects)
-			 0 list-size)
-       list-size
-       "p"
-       `(lambda (&rest ignore) (projectile-switch-project-by-name ,el))
-       (abbreviate-file-name el)))
-    )
+  (use-package minions
+    :ensure t
+    :config (minions-mode 1))
 #+END_SRC
-
-
+** colorscheme
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :demand
+    :ensure t
+    :init
+    (load-theme 'doom-nord t)
+    (doom-themes-visual-bell-config)
+    (setq doom-themes-treemacs-theme "doom-colors")
+    (doom-themes-treemacs-config)
+    (doom-themes-org-config))
+#+END_SRC
+** solaire mode
+#+BEGIN_SRC emacs-lisp
+  (use-package solaire-mode
+    :ensure t
+    :hook (((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+           (minibuffer-setup . solaire-mode-in-minibuffer))
+    :config
+    (solaire-global-mode)
+    (solaire-mode-swap-bg))
+#+END_SRC
+** set font
+#+BEGIN_SRC emacs-lisp
+  (set-frame-font "Mononoki 12" nil t)
+#+END_SRC
 
 * Basic settings
 ** utf-8 coding
@@ -198,10 +127,12 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+BEGIN_SRC emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
-** no backups
+** backups
 #+BEGIN_SRC emacs-lisp
-  (setq make-backup-files nil)
-  (setq auto-save-default nil)
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+  (setq version-control t)
+  (setq delete-old-versions t)
 #+END_SRC
 ** display time
 #+BEGIN_SRC emacs-lisp
@@ -210,7 +141,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+END_SRC
 ** Terminal
 *** set default shell to bash
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   (defvar my-term-shell "/usr/bin/zsh")
   (defadvice ansi-term (before force-bash)
     (interactive (list my-term-shell)))
@@ -220,15 +151,25 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 #+BEGIN_SRC emacs-lisp
   (setq find-file-visit-truename t)
 #+END_SRC
+** stretch cursor
+#+BEGIN_SRC emacs-lisp
+  (setq x-stretch-cursor t)
+#+END_SRC
+** remove whitespace before save
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'before-save-hook 'whitespace-cleanup)
+#+END_SRC
 * Basic packages
 ** all the icons
 #+BEGIN_SRC emacs-lisp
   (use-package all-the-icons
+    :defer 2
     :ensure t)
 #+END_SRC
 ** which-key
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
+    :defer 3
     :ensure t
     :diminish which-key-mode
     :init
@@ -245,13 +186,17 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :ensure t)
 
   (use-package use-package-hydra
+    :after hydra
     :ensure t)
 #+END_SRC
 ** Async processes wherever possible
 #+BEGIN_SRC emacs-lisp
   (use-package async
-    :ensure t)
+    :ensure t
+    :init
+    (setq async-bytecomp-package-mode t))
 #+END_SRC
+
 
 
 * ido and ibuffer
@@ -270,10 +215,10 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** ido-vertical
 #+BEGIN_SRC emacs-lisp
   (use-package ido-vertical-mode
+    :after ido
     :ensure t
-    :init
-    (ido-vertical-mode 1)
     :config
+    (ido-vertical-mode 1)
     (setq ido-vertical-define-keys 'C-n-and-C-p-only))
 #+END_SRC
 ** enable ibuffer
@@ -296,6 +241,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** smex(Ido like M-x menu)
 #+BEGIN_SRC emacs-lisp
   (use-package smex
+    :after ido
     :ensure t
     :init (smex-initialize)
     :bind ("M-x" . smex))
@@ -341,6 +287,20 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 
   ;; ;; use this for peep always on
   ;; (setq peep-dired-enable-on-directories t)
+#+END_SRC
+* dashboard
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :hook (after-init . dashboard-setup-startup-hook)
+    :config
+    (setq dashboard-startup-banner 'logo)
+    (setq dashboard-center-content nil)
+    (setq dashboard-items '((recents . 5)
+                            (projects . 5)))
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-set-navigator t))
 #+END_SRC
 * recentf mode
 source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
@@ -468,6 +428,12 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     (setq highlight-indent-guides-auto-character-face-perc 50)
     (setq highlight-indent-guides-responsive 'top))
 #+END_SRC
+** rainbow delimeters
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+END_SRC
 * org mode settings
 ** org indent
 #+BEGIN_SRC emacs-lisp
@@ -482,33 +448,6 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :hook
     (org-mode . org-bullets-mode))
 #+END_SRC
-* apperiance settings
-** set mode line
-#+BEGIN_SRC emacs-lisp
-  (use-package doom-modeline
-    :ensure t
-    :hook (after-init . doom-modeline-mode)
-    :config
-    (setq doom-modeline-height 34)
-    (setq doom-modeline-minor-modes (featurep 'minions)))
-
-  (use-package minions
-    :ensure t
-    :config (minions-mode 1))
-#+END_SRC
-** colorscheme
-#+BEGIN_SRC emacs-lisp
-  (use-package doom-themes
-    :ensure t
-    :config
-    (load-theme 'doom-nord t)
-    ;; treemacs
-    (setq doom-themes-treemacs-theme "doom-atom")
-    (doom-themes-treemacs-config)
-    ;; org mode
-    (doom-themes-org-config))
-#+END_SRC
-
 
 * expand region
 #+BEGIN_SRC emacs-lisp
@@ -520,12 +459,16 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 ** company
 #+BEGIN_SRC emacs-lisp
   (use-package company
-    :defer t
     :ensure t
+    :hook (prog-mode . company-mode)
     :config
     (setq company-idle-delay 0)
-    (setq company-minimum-prefix-length 3)
-    (global-company-mode))
+    (setq company-minimum-prefix-length 2))
+
+    (use-package company-quickhelp
+      :after company
+      :ensure t
+      :hook (company-mode . company-quickhelp-local-mode))
 
   ;;(with-eval-after-load 'company
   ;;  (define-key company-active-map (kbd "<tab>") #'company-select-next)
@@ -541,7 +484,6 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     (add-to-list 'company-backends 'company-irony))
 
   (use-package irony
-    :after company
     :ensure t
     :hook ((c++-mode . irony-mode)
            (c-mode . irony-mode)
@@ -555,13 +497,13 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 ** yasnippet
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
-    :defer t
     :ensure t
-    :hook (prog-mode . yas-minor-mode)
-    :config
-    (use-package yasnippet-snippets
-      :ensure t)
-    (yas-reload-all))
+    :hook (prog-mode . yas-minor-mode))
+
+  (use-package yasnippet-snippets
+    :after yasnippet
+    :ensure t
+    :config (yas-reload-all))
 #+END_SRC
 * projectile
 #+BEGIN_SRC emacs-lisp
@@ -573,6 +515,18 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :config
     (setq projectile-completion-system 'ido)
     (setq projectile-enable-caching t))
+#+END_SRC
+* popup shell
+#+BEGIN_SRC emacs-lisp
+  (use-package shell-pop
+    :ensure t
+    :bind ("C-c t" . shell-pop)
+    :config
+    (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*"
+                                       (lambda nil (ansi-term shell-pop-term-shell)))))
+    (setq shell-pop-term-shell "/bin/bash")
+    ;; need to do this manually or not picked up by `shell-pop'
+    (shell-pop--set-shell-type 'shell-pop-shell-type shell-pop-shell-type))
 #+END_SRC
 * magit (version control)
 #+BEGIN_SRC emacs-lisp
@@ -588,7 +542,7 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :hook (magit-mode . turn-on-magit-gitflow))
 
   (use-package git-gutter
-    :after hydra
+    :after hydra use-package-hydra
     :ensure t
     :bind (:map prog-mode-map
                 ("<f9>" . hydra-git-gutter/body))
@@ -673,6 +627,7 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 * flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
+    :defer t
     :ensure t
     :init (global-flycheck-mode))
 
