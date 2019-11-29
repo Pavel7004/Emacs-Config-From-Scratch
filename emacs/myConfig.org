@@ -447,8 +447,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package org
     :hook ((org-mode . org-indent-mode)
            (org-mode . (lambda ()
-                         (setq left-margin-width 8)
-                         (setq right-margin-width 8)
+                         (setq left-margin-width 4)
+                         (setq right-margin-width 4)
                          (setq-local global-hl-line-mode nil)
                          (set-window-buffer nil (current-buffer)))))
     :config
@@ -481,39 +481,43 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     (setq company-idle-delay 0)
     (setq company-minimum-prefix-length 2))
 
-    (use-package company-quickhelp
-      :after company
-      :ensure t
-      :hook (company-mode . company-quickhelp-local-mode))
+  (use-package company-quickhelp
+    :after company
+    :ensure t
+    :hook (company-mode . company-quickhelp-local-mode)
+    :init (setq company-quickhelp-delay 0.5))
 
-  ;;(with-eval-after-load 'company
-  ;;  (define-key company-active-map (kbd "<tab>") #'company-select-next)
-  ;;  (define-key company-active-map (kbd "<S-tab>") #'company-select-previous))
+  (use-package company-box
+    :ensure t
+    :after company
+    :hook (company-mode . company-box-mode)
+    :init (setq company-box-doc-delay 0.5))
 #+END_SRC
-** company irony
+** lsp mode
 #+BEGIN_SRC emacs-lisp
-  (use-package company-irony
+  (use-package lsp-mode
     :ensure t
-    :after (company irony)
-    :config
-    (require 'company)
-    (add-to-list 'company-backends 'company-irony))
+    :hook (prog-mode . lsp)
+    :commands lsp)
 
-  (use-package irony
+  (use-package lsp-ui
     :ensure t
-    :hook ((c++-mode . irony-mode)
-           (c-mode . irony-mode)
-           (irony-mode . irony-cdb-autosetup-compile-options)))
+    :after lsp
+    :commands lsp-ui-mode)
 
-  (use-package irony-eldoc
-    :after irony
+  (use-package company-lsp
     :ensure t
-    :hook (irony-mode . irony-eldoc))
+    :after (lsp company)
+    :commands company-lsp)
 
-  (use-package flycheck-irony
-    :after (flycheck irony)
+  (use-package lsp-treemacs
     :ensure t
-    :hook (irony-mode . flycheck-irony-setup))
+    :after (lsp treemacs)
+    :commands lsp-treemacs-errors-list)
+
+  (use-package dap-mode
+    :ensure t
+    :after lsp)
 #+END_SRC
 ** yasnippet
 #+BEGIN_SRC emacs-lisp
