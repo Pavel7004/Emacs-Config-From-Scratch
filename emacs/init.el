@@ -21,8 +21,6 @@
 (setq file-name-handler-alist-original file-name-handler-alist)
 (setq file-name-handler-alist nil)
 
-(org-babel-load-file (expand-file-name "~/.emacs.d/myConfig.org"))
-
 (defun reset-config ()
   (setq gc-cons-threshold gc-cons-threshold-original)
   (setq file-name-handler-alist file-name-handler-alist-original)
@@ -31,6 +29,8 @@
   (message "[user] gc-cons-threshold and file-name-handler-alist restored"))
 
 (add-hook 'after-init-hook 'reset-config)
+
+(org-babel-load-file (expand-file-name "~/.emacs.d/myConfig.org"))
 
 ;;;;;
 
@@ -41,7 +41,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (shell-pop solaire-mode flycheck-pos-tip swiper treemacs-magit treemacs-icons-dired treemacs-projectile treemacs git-gutter magit-gitflow magit yasnippet-snippets yasnippet flycheck-irony company-irony company-quickhelp company expand-region doom-themes minions doom-modeline org-bullets rainbow-delimiters highlight-indent-guides linum-relative aggressive-indent rainbow-mode peep-dired smex ibuffer-projectile ido-vertical-mode async use-package-hydra hydra diminish which-key all-the-icons dashboard use-package))))
+    (centered-window hide-mode-line irony-eldoc shell-pop solaire-mode flycheck-pos-tip swiper treemacs-magit treemacs-icons-dired treemacs-projectile treemacs git-gutter magit-gitflow magit yasnippet flycheck-irony company-irony company-quickhelp company expand-region doom-themes minions doom-modeline org-bullets rainbow-delimiters highlight-indent-guides linum-relative aggressive-indent rainbow-mode peep-dired smex ibuffer-projectile ido-vertical-mode async use-package-hydra hydra diminish which-key all-the-icons dashboard use-package))))
 (put 'dired-find-alternate-file 'disabled nil)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

@@ -142,7 +142,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** Terminal
 *** set default shell to bash
 #+BEGIN_SRC emacs-lisp
-  (defvar my-term-shell "/usr/bin/zsh")
+  (defvar my-term-shell "/usr/bin/bash")
   (defadvice ansi-term (before force-bash)
     (interactive (list my-term-shell)))
   (ad-activate 'ansi-term)
@@ -163,7 +163,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** all the icons
 #+BEGIN_SRC emacs-lisp
   (use-package all-the-icons
-    :defer 2
+    :defer 3
     :ensure t)
 #+END_SRC
 ** which-key
@@ -180,6 +180,13 @@ reference: https://gitlab.com/buildfunthings/emacs-config
   (use-package diminish
     :ensure t)
 #+END_SRC
+** hide mode line
+#+BEGIN_SRC emacs-lisp
+  (use-package hide-mode-line
+    :defer t
+    :ensure t
+    :hook (completion-list-mode . hide-mode-line-mode))
+#+END_SRC
 ** hydra
 #+BEGIN_SRC emacs-lisp
   (use-package hydra
@@ -192,6 +199,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
 ** Async processes wherever possible
 #+BEGIN_SRC emacs-lisp
   (use-package async
+    :demand
     :ensure t
     :init
     (setq async-bytecomp-package-mode t))
@@ -296,8 +304,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :config
     (setq dashboard-startup-banner 'logo)
     (setq dashboard-center-content nil)
-    (setq dashboard-items '((recents . 5)
-                            (projects . 5)))
+    (setq dashboard-items '((recents . 10)
+                            (projects . 10)))
     (setq dashboard-set-heading-icons t)
     (setq dashboard-set-file-icons t)
     (setq dashboard-set-navigator t))
@@ -435,20 +443,28 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :hook (prog-mode . rainbow-delimiters-mode))
 #+END_SRC
 * org mode settings
-** org indent
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :hook (org-mode . org-indent-mode))
-#+END_SRC
-** org-mode bullets
-#+BEGIN_SRC emacs-lisp
+    :hook ((org-mode . org-indent-mode)
+           (org-mode . (lambda ()
+                         (setq left-margin-width 8)
+                         (setq right-margin-width 8)
+                         (setq-local global-hl-line-mode nil)
+                         (set-window-buffer nil (current-buffer)))))
+    :config
+    (setq org-ellipsis "  " ;; folding symbol
+          org-pretty-entities t
+          org-hide-emphasis-markers t
+          org-fontify-whole-heading-line t
+          org-fontify-done-headline t
+          org-fontify-quote-and-verse-blocks t))
+
   (use-package org-bullets
     :after org
     :ensure t
     :hook
     (org-mode . org-bullets-mode))
 #+END_SRC
-
 * expand region
 #+BEGIN_SRC emacs-lisp
   (use-package expand-region
@@ -489,6 +505,11 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
            (c-mode . irony-mode)
            (irony-mode . irony-cdb-autosetup-compile-options)))
 
+  (use-package irony-eldoc
+    :after irony
+    :ensure t
+    :hook (irony-mode . irony-eldoc))
+
   (use-package flycheck-irony
     :after (flycheck irony)
     :ensure t
@@ -520,7 +541,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 #+BEGIN_SRC emacs-lisp
   (use-package shell-pop
     :ensure t
-    :bind ("C-c t" . shell-pop)
+    :bind ("C-<f5>" . shell-pop)
+    :hook (shell-pop-out . hide-mode-line-mode)
     :config
     (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*"
                                        (lambda nil (ansi-term shell-pop-term-shell)))))
