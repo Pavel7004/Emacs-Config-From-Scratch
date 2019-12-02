@@ -535,7 +535,7 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :ensure t
     :hook (prog-mode . projectile-mode)
     :bind (:map prog-mode-map
-                "<f5>" . 'projectile-compile-project)
+                ("<f5>" . 'projectile-compile-project))
     :bind-keymap ("C-c p" . projectile-command-map)
     :config
     (setq projectile-completion-system 'ido)
@@ -547,7 +547,7 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :after hide-mode-line
     :ensure t
     :bind (:map prog-mode-map
-                "<f9>" . shell-pop)
+               ("<f9>" . shell-pop))
     :hook (shell-pop-out . hide-mode-line-mode)
     :config
     (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*"
