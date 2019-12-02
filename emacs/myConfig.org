@@ -172,7 +172,7 @@ reference: https://gitlab.com/buildfunthings/emacs-config
     :defer 3
     :ensure t
     :diminish which-key-mode
-    :init
+    :config
     (which-key-mode))
 #+END_SRC
 ** diminish
@@ -400,7 +400,10 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 #+END_SRC
 ** electric(auto closing brackets)
 #+BEGIN_SRC emacs-lisp
-  (electric-pair-mode t)
+  (use-package electric
+    :defer t
+    :config
+    (electric-pair-mode t))
 #+END_SRC
 ** rainbow(colored hex colors)
 #+BEGIN_SRC emacs-lisp
@@ -481,17 +484,13 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     (setq company-idle-delay 0)
     (setq company-minimum-prefix-length 2))
 
-  (use-package company-quickhelp
-    :after company
-    :ensure t
-    :hook (company-mode . company-quickhelp-local-mode)
-    :init (setq company-quickhelp-delay 0.5))
-
   (use-package company-box
     :ensure t
     :after company
     :hook (company-mode . company-box-mode)
     :init (setq company-box-doc-delay 0.5))
+
+  ;; to fix big icons: `mogrify -resize 50% *.png` (requires imagemagic)
 #+END_SRC
 ** lsp mode
 #+BEGIN_SRC emacs-lisp
@@ -535,7 +534,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package projectile
     :ensure t
     :hook (prog-mode . projectile-mode)
-    :bind ("<f5>" . 'projectile-compile-project)
+    :bind (:map prog-mode-map
+                "<f5>" . 'projectile-compile-project)
     :bind-keymap ("C-c p" . projectile-command-map)
     :config
     (setq projectile-completion-system 'ido)
@@ -544,8 +544,10 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 * popup shell
 #+BEGIN_SRC emacs-lisp
   (use-package shell-pop
+    :after hide-mode-line
     :ensure t
-    :bind ("C-<f5>" . shell-pop)
+    :bind (:map prog-mode-map
+                "<f9>" . shell-pop)
     :hook (shell-pop-out . hide-mode-line-mode)
     :config
     (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*"
@@ -571,7 +573,7 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
     :after hydra use-package-hydra
     :ensure t
     :bind (:map prog-mode-map
-                ("<f9>" . hydra-git-gutter/body))
+                ("C-<f9>" . hydra-git-gutter/body))
     :hydra (hydra-git-gutter (:pre (progn (linum-relative-mode -1)
                                           (git-gutter-mode 1))
                                    :hint nil)
