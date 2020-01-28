@@ -1,3 +1,0 @@
-* My dotfiles repo
-
-This repo I use to store all my config files
