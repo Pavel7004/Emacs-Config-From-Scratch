@@ -14,7 +14,7 @@
 [colors]
 
 bg              = #3b4252
-bg-workspaces   = #2e3440
+bg-workspaces   = ${colors.bg}
 bg-focused      = #eceff4
 bg-state        = ${colors.bg}
 bg-date         = #a3be8c
@@ -22,7 +22,7 @@ bg-volume       = #b48ead
 bg-layout       = #5e81ac
 bg-tray         = #8fbcbb
 bg-xwindow      = #88c0d0
-fg              = #d8dee9
+fg              = #e5e9f0
 fg-empty        = #81a1c1
 red             = #d08770
 
@@ -30,6 +30,7 @@ red             = #d08770
 background = ${colors.bg}
 foreground = ${colors.fg}
 height     = 28
+padding-left = 2
 
 fixed-center = true
 font-0 = San Francisco Display Regular:size=13;1
@@ -39,12 +40,15 @@ modules-left  = xwindow
 modules-center = bspwm
 modules-right = xkeyboard date volume
 
+module-margin = 1
+
 override-redirect = false
 wm-restack        = bspwm
 
 tray-position = left
 tray-background = ${colors.bg-tray}
 tray-maxsize = 28
+tray-padding = 2
 
 ;== Modules ========================================================
 

@@ -259,16 +259,14 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
 ** base settings
 #+BEGIN_SRC emacs-lisp
   (use-package dired
+    :commands dired
     :config
     (setq dired-recursive-copies 'always)
     (setq dired-recursive-deletes 'always)
     (setq dired-isearch-filenames 'dwim)
     (setq delete-by-moving-to-trash t)
     (setq dired-listing-switches "-AFlv --group-directories-first")
-    (setq dired-dwim-target t)
-    ;;:hook (dired-mode . dired-hide-details-mode)
-    :bind (("C-c d" . dired)
-           ("C-c D" . dired-other-window)))
+    (setq dired-dwim-target t))
 
   (use-package find-dired
     :after dired
@@ -502,7 +500,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package lsp-ui
     :ensure t
     :after lsp
-    :commands lsp-ui-mode)
+    :commands lsp-ui-mode
+    :hook (lsp-mode . lsp-ui-mode))
 
   (use-package company-lsp
     :ensure t
@@ -534,8 +533,6 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package projectile
     :ensure t
     :hook (prog-mode . projectile-mode)
-    :bind (:map prog-mode-map
-                ("<f5>" . 'projectile-compile-project))
     :bind-keymap ("C-c p" . projectile-command-map)
     :config
     (setq projectile-completion-system 'ido)
@@ -546,9 +543,8 @@ source: https://gitlab.com/protesilaos/dotemacs/blob/master/emacs-init.org
   (use-package shell-pop
     :after hide-mode-line
     :ensure t
-    :bind (:map prog-mode-map
-               ("<f9>" . shell-pop))
-    :hook (shell-pop-out . hide-mode-line-mode)
+    :bind ([f5] . shell-pop)
+    :hook (shell-pop-in-after . hide-mode-line-mode)
     :config
     (setq shell-pop-shell-type (quote ("ansi-term" "*ansi-term*"
                                        (lambda nil (ansi-term shell-pop-term-shell)))))
